@@ -36,6 +36,13 @@ namespace FrontEnd.Services
             return true;
         }
 
+        public async Task AddSessionToAttendeeAsync(string name, int sessionId)
+        {
+            var response = await _httpClient.PostAsync($"{_attendeesUri}/{name}/session/{sessionId}", null);
+
+            response.EnsureSuccessStatusCode();
+        }
+
         public async Task DeleteSessionAsync(int id)
         {
             var response = await _httpClient.DeleteAsync($"{_sessionsUri}/{id}");
@@ -90,6 +97,28 @@ namespace FrontEnd.Services
             return await response.Content.ReadAsAsync<List<SessionResponse>>();
         }
 
+        public async Task<List<SessionResponse>> GetSessionsByAttendeeAsync(string name)
+        {
+            var attendeeTask = GetAttendeeAsync(name);
+            var sessionsTask = GetSessionsAsync();
+
+            await Task.WhenAll(attendeeTask, sessionsTask);
+
+            var attendee = await attendeeTask;
+            var sessions = await sessionsTask;
+
+            if (attendee == null)
+            {
+                return new List<SessionResponse>();
+            }
+
+            var sessionIds = attendee.Sessions.Select(s => s.ID);
+
+            sessions.RemoveAll(s => !sessionIds.Contains(s.ID));
+
+            return sessions;
+        }
+
         public async Task<SpeakerResponse> GetSpeakerAsync(int id)
         {
             var response = await _httpClient.GetAsync($"{_speakersUri}/{id}");
@@ -116,6 +145,13 @@ namespace FrontEnd.Services
         public async Task PutSessionAsync(Session session)
         {
             var response = await _httpClient.PutAsJsonAsync($"{_sessionsUri}/{session.ID}", session);
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task RemoveSessionFromAttendeeAsync(string name, int sessionId)
+        {
+            var response = await _httpClient.DeleteAsync($"{_attendeesUri}/{name}/session/{sessionId}");
 
             response.EnsureSuccessStatusCode();
         }
