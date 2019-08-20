@@ -16,8 +16,9 @@ namespace FrontEnd.Areas.Identity
 
         public ClaimsPrincipalFactory(
             IApiClient apiClient,
-            UserManager<User> userManager, 
-            IOptions<IdentityOptions> optionsAccessor) : base(userManager, optionsAccessor)
+            UserManager<User> userManager,
+            IOptions<IdentityOptions> optionsAccessor)
+        : base(userManager, optionsAccessor)
         {
             _apiClient = apiClient;
         }
@@ -29,6 +30,12 @@ namespace FrontEnd.Areas.Identity
             if (user.IsAdmin)
             {
                 identity.MakeAdmin();
+            }
+
+            var attendee = await _apiClient.GetAttendeeAsync(user.UserName);
+            if (attendee != null)
+            {
+                identity.MakeAttendee();
             }
 
             return identity;
