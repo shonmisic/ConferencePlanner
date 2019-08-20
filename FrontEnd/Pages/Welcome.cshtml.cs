@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Threading.Tasks;
+using FrontEnd.Filter;
 using FrontEnd.Pages.Models;
 using FrontEnd.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -12,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace FrontEnd.Pages
 {
+    [SkipWelcome]
     public class WelcomeModel : PageModel
     {
         private readonly IApiClient _apiClient;
@@ -22,7 +21,7 @@ namespace FrontEnd.Pages
         }
 
         [BindProperty]
-        public Attendee Attendee{ get; set; }
+        public Attendee Attendee { get; set; }
 
         public IActionResult OnGet()
         {
