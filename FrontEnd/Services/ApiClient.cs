@@ -10,10 +10,10 @@ namespace FrontEnd.Services
 {
     public class ApiClient : IApiClient
     {
-        private readonly static string _sessionsUri = "/api/sessions";
-        private readonly static string _attendeesUri = "/api/attendees";
-        private readonly static string _speakersUri = "/api/speakers";
-        private readonly static string _searchUri = "/api/search";
+        private static readonly string _sessionsUri = "/api/sessions";
+        private static readonly string _attendeesUri = "/api/attendees";
+        private static readonly string _speakersUri = "/api/speakers";
+        private static readonly string _searchUri = "/api/search";
 
         private readonly HttpClient _httpClient;
 
@@ -177,7 +177,7 @@ namespace FrontEnd.Services
                 var response = await _httpClient.GetStringAsync("/health");
 
                 return string.Equals(response, "Healthy", StringComparison.OrdinalIgnoreCase);
-                
+
             }
             catch
             {

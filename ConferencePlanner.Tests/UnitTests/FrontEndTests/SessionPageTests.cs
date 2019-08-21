@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using ConferenceDTO;
 using FrontEnd.Pages;
 using FrontEnd.Services;
 using Microsoft.AspNetCore.Http;
@@ -17,7 +16,7 @@ using Xunit;
 
 namespace ConferencePlanner.Tests.UnitTests.FrontEndTests
 {
-    public class SessionModelTests
+    public class SessionPageTests
     {
         [Fact]
         public async Task OnGetAsyncSuccessfull()

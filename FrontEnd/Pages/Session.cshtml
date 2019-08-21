@@ -7,7 +7,7 @@
     <li class="breadcrumb-item active">@Model.Session.Title</li>
 </ol>
 
-<h1>@Model.Session.Title</h1>
+<h1 id="title">@Model.Session.Title</h1>
 <span class="label label-default">@Model.Session.Track?.Name</span>
 
 @foreach (var speaker in Model.Session.Speakers)

@@ -12,7 +12,7 @@ using Xunit;
 
 namespace ConferencePlanner.Tests.UnitTests.FrontEndTests
 {
-    public class SpeakerModelTests
+    public class SpeakerPageTests
     {
         [Fact]
         public async Task GetSpeakerAsyncFail_SpeakerNotFound()

@@ -39,12 +39,9 @@ namespace FrontEnd
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddHttpClient<IApiClient, ApiClient>(client =>
-            {
-                client.BaseAddress = new Uri(Configuration["ServiceUrl"]);
-            });
+            RegisterHttpRequestCreatingServices(services);
+
             services.AddTransient<RequireLoginFilter>();
-            services.AddSingleton<IAdminService, AdminService>();
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("Admin", policy =>
@@ -57,6 +54,15 @@ namespace FrontEnd
             services.AddHealthChecks()
                 .AddCheck<BackendHealthChecks>("backend")
                 .AddDbContextCheck<IdentityDbContext>();
+        }
+
+        protected virtual void RegisterHttpRequestCreatingServices(IServiceCollection services)
+        {
+            services.AddHttpClient<IApiClient, ApiClient>(client =>
+            {
+                client.BaseAddress = new Uri(Configuration["ServiceUrl"]);
+            });
+            services.AddSingleton<IAdminService, AdminService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
