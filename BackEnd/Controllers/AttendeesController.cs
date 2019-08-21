@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using ConferenceDTO;
 using BackEnd.Infrastructure;
+using BackEnd.Repositories;
 
 namespace BackEnd
 {
@@ -14,19 +15,19 @@ namespace BackEnd
     [ApiController]
     public class AttendeesController : ControllerBase
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IAttendeesRepository _attendeesRepository;
+        private readonly ISessionsRepository _sessionsRepository;
 
-        public AttendeesController(ApplicationDbContext db)
+        public AttendeesController(IAttendeesRepository attendeesRepository, ISessionsRepository sessionsRepository)
         {
-            _db = db;
+            _attendeesRepository = attendeesRepository;
+            _sessionsRepository = sessionsRepository;
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<AttendeeResponse>> Get(string id)
+        [HttpGet("{username}")]
+        public async Task<ActionResult<AttendeeResponse>> Get(string username)
         {
-            var attendee = await _db.Attendees.Include(a => a.SessionAttendees)
-                                                .ThenInclude(sa => sa.Session)
-                                              .SingleOrDefaultAsync(a => a.UserName == id);
+            var attendee = await _attendeesRepository.GetByUsernameAsync(username);
 
             if (attendee == null)
             {
@@ -44,25 +45,20 @@ namespace BackEnd
         public async Task<ActionResult<AttendeeResponse>> Post(ConferenceDTO.Attendee input)
         {
             // Check if the attendee already exists
-            var existingAttendee = await _db.Attendees
-                .Where(a => a.UserName == input.UserName)
-                .FirstOrDefaultAsync();
+            var existingAttendee = await _attendeesRepository.GetByUsernameAsync(input.UserName);
 
             if (existingAttendee != null)
             {
                 return Conflict(input);
             }
 
-            var attendee = new Data.Attendee
+            var attendee = await _attendeesRepository.AddAsync(new Data.Attendee
             {
                 FirstName = input.FirstName,
                 LastName = input.LastName,
                 UserName = input.UserName,
                 EmailAddress = input.EmailAddress
-            };
-
-            _db.Attendees.Add(attendee);
-            await _db.SaveChangesAsync();
+            });
 
             var result = attendee.MapAttendeeResponse();
 
@@ -76,33 +72,23 @@ namespace BackEnd
         [ProducesDefaultResponseType]
         public async Task<ActionResult<AttendeeResponse>> AddSession(string username, int sessionId)
         {
-            var attendee = await _db.Attendees.Include(a => a.SessionAttendees)
-                                                .ThenInclude(sa => sa.Session)
-                                              .Include(a => a.ConferenceAttendees)
-                                                .ThenInclude(ca => ca.Conference)
-                                              .SingleOrDefaultAsync(a => a.UserName == username);
+            var attendee = await _attendeesRepository.GetByUsernameAsync(username);
 
             if (attendee == null)
             {
                 return NotFound();
             }
 
-            var session = await _db.Sessions.FindAsync(sessionId);
+            var session = await _sessionsRepository.GetAsync(sessionId);
 
             if (session == null)
             {
                 return BadRequest();
             }
 
-            attendee.SessionAttendees.Add(new SessionAttendee
-            {
-                AttendeeId = attendee.ID,
-                SessionId = sessionId
-            });
+            var newAttendee = await _attendeesRepository.AddSessionAsync(username, sessionId);
 
-            await _db.SaveChangesAsync();
-
-            var result = attendee.MapAttendeeResponse();
+            var result = newAttendee.MapAttendeeResponse();
 
             return result;
         }
@@ -114,25 +100,21 @@ namespace BackEnd
         [ProducesDefaultResponseType]
         public async Task<IActionResult> RemoveSession(string username, int sessionId)
         {
-            var attendee = await _db.Attendees.Include(a => a.SessionAttendees)
-                                              .SingleOrDefaultAsync(a => a.UserName == username);
+            var attendee = await _attendeesRepository.GetByUsernameAsync(username);
 
             if (attendee == null)
             {
                 return NotFound();
             }
 
-            var session = await _db.Sessions.FindAsync(sessionId);
+            var session = await _sessionsRepository.GetAsync(sessionId);
 
             if (session == null)
             {
                 return BadRequest();
             }
 
-            var sessionAttendee = attendee.SessionAttendees.FirstOrDefault(sa => sa.SessionId == sessionId);
-            attendee.SessionAttendees.Remove(sessionAttendee);
-
-            await _db.SaveChangesAsync();
+            await _attendeesRepository.RemoveSessionAsync(username, sessionId);
 
             return NoContent();
         }

@@ -64,7 +64,7 @@ namespace BackEnd.Infrastructure
                     .Select(sa =>
                         new ConferenceDTO.Session
                         {
-                            ID = sa.SessionId,
+                            ID = sa.Session.ID,
                             Title = sa.Session.Title,
                             StartTime = sa.Session.StartTime,
                             EndTime = sa.Session.EndTime
@@ -74,7 +74,7 @@ namespace BackEnd.Infrastructure
                     .Select(ca =>
                         new ConferenceDTO.Conference
                         {
-                            ID = ca.ConferenceId,
+                            ID = ca.Conference.ID,
                             Name = ca.Conference.Name
                         })
                     .ToList(),

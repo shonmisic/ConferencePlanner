@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BackEnd.Data;
 using BackEnd.Infrastructure;
+using BackEnd.Repositories;
 using ConferenceDTO;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Controllers
 {
@@ -13,37 +12,26 @@ namespace BackEnd.Controllers
     [ApiController]
     public class SessionsController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly ISessionsRepository _sessionsRepository;
 
-        public SessionsController(ApplicationDbContext db)
+        public SessionsController(ISessionsRepository sessionsRepository)
         {
-            _db = db;
+            _sessionsRepository = sessionsRepository;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<SessionResponse>>> Get()
         {
-            var sessions = await _db.Sessions.AsNoTracking()
-                                             .Include(s => s.Track)
-                                             .Include(s => s.SessionSpeakers)
-                                                .ThenInclude(ss => ss.Speaker)
-                                             .Include(s => s.SessionTags)
-                                                .ThenInclude(st => st.Tag)
+            var sessions = (await _sessionsRepository.GetAllAsync())
                                              .Select(m => m.MapSessionResponse())
-                                             .ToListAsync();
+                                             .ToList();
             return sessions;
         }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<SessionResponse>> Get(int id)
         {
-            var session = await _db.Sessions.AsNoTracking()
-                                            .Include(s => s.Track)
-                                            .Include(s => s.SessionSpeakers)
-                                                .ThenInclude(ss => ss.Speaker)
-                                            .Include(s => s.SessionTags)
-                                                .ThenInclude(st => st.Tag)
-                                            .SingleOrDefaultAsync(s => s.ID == id);
+            var session = await _sessionsRepository.GetAsync(id);
 
             if (session == null)
             {
@@ -56,7 +44,7 @@ namespace BackEnd.Controllers
         [HttpPost]
         public async Task<ActionResult<SessionResponse>> Post(ConferenceDTO.Session input)
         {
-            var session = new Data.Session
+            var session = await _sessionsRepository.AddAsync(new Data.Session
             {
                 Title = input.Title,
                 ConferenceId = input.ConferenceId,
@@ -64,10 +52,7 @@ namespace BackEnd.Controllers
                 EndTime = input.EndTime,
                 Abstract = input.Abstract,
                 TrackId = input.TrackId
-            };
-
-            _db.Sessions.Add(session);
-            await _db.SaveChangesAsync();
+            });
 
             var result = session.MapSessionResponse();
 
@@ -77,22 +62,14 @@ namespace BackEnd.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, ConferenceDTO.Session input)
         {
-            var session = await _db.Sessions.FindAsync(id);
+            var session = await _sessionsRepository.GetAsync(id);
 
             if (session == null)
             {
                 return NotFound();
             }
 
-            session.ID = input.ID;
-            session.Title = input.Title;
-            session.Abstract = input.Abstract;
-            session.StartTime = input.StartTime;
-            session.EndTime = input.EndTime;
-            session.TrackId = input.TrackId;
-            session.ConferenceId = input.ConferenceId;
-
-            await _db.SaveChangesAsync();
+            await _sessionsRepository.UpdateAsync(input);
 
             return NoContent();
         }
@@ -100,15 +77,14 @@ namespace BackEnd.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<SessionResponse>> Delete(int id)
         {
-            var session = await _db.Sessions.FindAsync(id);
+            var session = await _sessionsRepository.GetAsync(id);
 
             if (session == null)
             {
                 return NotFound();
             }
 
-            _db.Sessions.Remove(session);
-            await _db.SaveChangesAsync();
+            await _sessionsRepository.DeleteAsync(id);
 
             return session.MapSessionResponse();
         }

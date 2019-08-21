@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using BackEnd.Data;
+using BackEnd.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -43,6 +44,9 @@ namespace BackEnd
 
             services.AddHealthChecks()
                 .AddDbContextCheck<ApplicationDbContext>();
+
+            services.AddTransient<IAttendeesRepository, AttendeesRepository>();
+            services.AddTransient<ISessionsRepository, SessionsRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
