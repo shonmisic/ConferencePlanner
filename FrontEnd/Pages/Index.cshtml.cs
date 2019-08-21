@@ -7,16 +7,19 @@ using ConferenceDTO;
 using FrontEnd.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 
 namespace FrontEnd.Pages
 {
     public class IndexModel : PageModel
     {
         protected readonly IApiClient _apiClient;
+        private readonly ILogger<IndexModel> _logger;
 
-        public IndexModel(IApiClient apiClient)
+        public IndexModel(IApiClient apiClient, ILogger<IndexModel> logger)
         {
             _apiClient = apiClient;
+            _logger = logger;
         }
 
         public IEnumerable<IGrouping<DateTimeOffset?, SessionResponse>> Sessions { get; set; }
@@ -31,6 +34,8 @@ namespace FrontEnd.Pages
 
         public async Task OnGet(int day = 0)
         {
+            _logger.LogDebug("OnGet was called");
+
             IsAdmin = User.IsAdmin();
 
             CurrentDayOffset = day;
@@ -72,6 +77,8 @@ namespace FrontEnd.Pages
 
         protected virtual Task<List<SessionResponse>> GetSessionsAsync()
         {
+            _logger.LogDebug("GetSessionsAsync was called");
+
             return _apiClient.GetSessionsAsync();
         }
     }

@@ -15,10 +15,7 @@
     <em><a asp-page="Speaker" asp-route-id="@speaker.ID">@speaker.Name</a></em>
 }
 
-@foreach (var para in Model.Session.Abstract.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries))
-{
-    <p>@para</p>
-}
+<abstract abstract-text="@Model.Session.Abstract"></abstract>
 
 <form method="post">
     <input type="hidden" name="sessionId" value="@Model.Session.ID" />
