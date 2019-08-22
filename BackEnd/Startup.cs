@@ -47,6 +47,7 @@ namespace BackEnd
 
             services.AddTransient<IAttendeesRepository, AttendeesRepository>();
             services.AddTransient<ISessionsRepository, SessionsRepository>();
+            services.AddTransient<IImagesRepository, ImagesRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

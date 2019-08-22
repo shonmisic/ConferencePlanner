@@ -19,5 +19,7 @@ namespace FrontEnd.Services
         Task AddSessionToAttendeeAsync(string name, int sessionId);
         Task RemoveSessionFromAttendeeAsync(string name, int sessionId);
         Task<bool> CheckHealthAsync();
+        Task<ICollection<ImageResponse>> GetImagesAsync();
+        Task AddImageToAttendeeAsync(string username, ImageRequest imageRequest);
     }
 }

@@ -13,6 +13,11 @@ namespace ConferencePlanner.Tests.Mocks
             throw new NotImplementedException();
         }
 
+        public Task AddImageToAttendeeAsync(string username, ImageRequest imageRequest)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task AddSessionToAttendeeAsync(string name, int sessionId)
         {
             throw new NotImplementedException();
@@ -38,6 +43,11 @@ namespace ConferencePlanner.Tests.Mocks
                 LastName = "Doe",
                 UserName = "username"
             });
+        }
+
+        public Task<ICollection<ImageResponse>> GetImagesAsync()
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<SessionResponse> GetSessionAsync(int id)

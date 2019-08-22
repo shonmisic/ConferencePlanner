@@ -26,10 +26,10 @@ namespace BackEnd.Infrastructure
                                       Name = ss.Speaker.Name
                                   })
                                    .ToList(),
-                TrackId = session.TrackId,
+                TrackId = session.TrackId ?? 0,
                 Track = new ConferenceDTO.Track
                 {
-                    ID = session?.TrackId ?? 0,
+                    ID = session.TrackId ?? 0,
                     Name = session.Track?.Name
                 },
                 ConferenceId = session.ConferenceId,
@@ -78,6 +78,36 @@ namespace BackEnd.Infrastructure
                             Name = ca.Conference.Name
                         })
                     .ToList(),
+                Images = attendee.Images?
+                    .Select(i =>
+                        new ConferenceDTO.Image
+                        {
+                            ID = i.ID,
+                            AttendeeId = i.AttendeeId,
+                            UploadDate = i.UploadDate,
+                            Content = i.Content,
+                            Name = i.Name,
+                        })
+                    .ToList(),
+            };
+
+        public static ConferenceDTO.ImageResponse MapImageResponse(this Image image) =>
+            new ConferenceDTO.ImageResponse
+            {
+                Attendee = new ConferenceDTO.Attendee
+                {
+                    ID = image.Attendee.ID,
+                    EmailAddress = image.Attendee.EmailAddress,
+                    FirstName = image.Attendee.FirstName,
+                    LastName = image.Attendee.LastName,
+                    UserName = image.Attendee.UserName,
+                },
+                AttendeeId = image.AttendeeId,
+                Content = image.Content,
+                ID = image.ID,
+                Name = image.Name,
+                UploadDate = image.UploadDate,
+                ImageType = image.ImageType
             };
     }
 }

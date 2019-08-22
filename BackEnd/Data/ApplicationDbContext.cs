@@ -38,5 +38,6 @@ namespace BackEnd.Data
         public DbSet<Session> Sessions { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Track> Tracks { get; set; }
+        public DbSet<Image> Images { get; set; }
     }
 }

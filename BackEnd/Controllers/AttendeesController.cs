@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using ConferenceDTO;
 using BackEnd.Infrastructure;
 using BackEnd.Repositories;
+using System;
 
 namespace BackEnd
 {
@@ -62,7 +63,7 @@ namespace BackEnd
 
             var result = attendee.MapAttendeeResponse();
 
-            return CreatedAtAction(nameof(Get), new { id = result.UserName }, result);
+            return CreatedAtAction(nameof(Get), new { username = result.UserName }, result);
         }
 
         [HttpPost("{username}/session/{sessionId:int}")]
@@ -117,6 +118,35 @@ namespace BackEnd
             await _attendeesRepository.RemoveSessionAsync(username, sessionId);
 
             return NoContent();
+        }
+
+        [HttpPost("{username}/image")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<AttendeeResponse>> AddImage(string username, ImageRequest imageRequest)
+        {
+            var attendee = await _attendeesRepository.GetByUsernameAsync(username);
+
+            if (attendee == null)
+            {
+                return NotFound();
+            }
+
+            var image = new Data.Image
+            {
+                Name = imageRequest.Name,
+                Content = imageRequest.Content,
+                UploadDate = DateTimeOffset.Now,
+                AttendeeId = attendee.ID,
+                ImageType = imageRequest.ImageType,
+            };
+            var newAttendee = await _attendeesRepository.AddImageAsync(username, image);
+
+            var result = newAttendee.MapAttendeeResponse();
+
+            return result;
         }
     }
 }

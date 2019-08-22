@@ -21,6 +21,7 @@ namespace BackEnd.Repositories
                                                 .ThenInclude(sa => sa.Session)
                                              .Include(a => a.ConferenceAttendees)
                                                 .ThenInclude(ca => ca.Conference)
+                                             .Include(a => a.Images)
                                              .SingleOrDefaultAsync(a => a.UserName == username);
         }
 
@@ -36,10 +37,12 @@ namespace BackEnd.Repositories
         public async Task<Attendee> AddSessionAsync(string username, int sessionId, CancellationToken cancellationToken = default(CancellationToken))
         {
             var attendee = await _dbContext.Attendees.SingleOrDefaultAsync(a => a.UserName == username);
+            var session = await _dbContext.Sessions.FindAsync(sessionId);
+
             attendee.SessionAttendees.Add(new SessionAttendee
             {
-                AttendeeId = attendee.ID,
-                SessionId = sessionId,
+                Attendee = attendee,
+                Session = session,
             });
 
             await _dbContext.SaveChangesAsync();
@@ -57,6 +60,17 @@ namespace BackEnd.Repositories
             await _dbContext.SaveChangesAsync();
 
             return success;
+        }
+
+        public async Task<Attendee> AddImageAsync(string username, Image image, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var attendee = await _dbContext.Attendees.SingleOrDefaultAsync(a => a.UserName == username);
+
+            attendee.Images.Add(image);
+
+            await _dbContext.SaveChangesAsync();
+
+            return attendee;
         }
     }
 }

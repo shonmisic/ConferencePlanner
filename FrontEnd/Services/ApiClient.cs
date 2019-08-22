@@ -14,6 +14,7 @@ namespace FrontEnd.Services
         private static readonly string _attendeesUri = "/api/attendees";
         private static readonly string _speakersUri = "/api/speakers";
         private static readonly string _searchUri = "/api/search";
+        private static readonly string _imagesUri = "/api/images";
 
         private readonly HttpClient _httpClient;
 
@@ -183,6 +184,22 @@ namespace FrontEnd.Services
             {
                 return false;
             }
+        }
+
+        public async Task<ICollection<ImageResponse>> GetImagesAsync()
+        {
+            var response = await _httpClient.GetAsync(_imagesUri);
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsAsync<ICollection<ImageResponse>>();
+        }
+
+        public async Task AddImageToAttendeeAsync(string username, ImageRequest imageRequest)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{_attendeesUri}/{username}/image", imageRequest);
+
+            response.EnsureSuccessStatusCode();
         }
     }
 }
