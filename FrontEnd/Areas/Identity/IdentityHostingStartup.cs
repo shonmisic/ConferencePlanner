@@ -16,8 +16,10 @@ namespace FrontEnd.Areas.Identity
         {
             builder.ConfigureServices((context, services) => {
                 services.AddDbContext<IdentityDbContext>(options =>
-                    options.UseSqlServer(
-                        context.Configuration.GetConnectionString("IdentityDbContextConnection")));
+                    //options.UseSqlServer(
+                    //    context.Configuration.GetConnectionString("IdentityDbContextConnection")));
+                    options.UseNpgsql(
+                        context.Configuration.GetConnectionString("PostgreSQLConnection")));
 
                 services.AddDefaultIdentity<User>(options =>
                     {
@@ -31,6 +33,12 @@ namespace FrontEnd.Areas.Identity
                     .AddDefaultUI(UIFramework.Bootstrap4)
                     .AddEntityFrameworkStores<IdentityDbContext>()
                     .AddClaimsPrincipalFactory<ClaimsPrincipalFactory>();
+
+                services.AddAuthentication().AddFacebook(facebookOptions =>
+                {
+                    facebookOptions.AppId = context.Configuration["Authentication:Facebook:AppId"];
+                    facebookOptions.AppSecret = context.Configuration["Authentication:Facebook:AppSecret"];
+                });
             });
         }
     }

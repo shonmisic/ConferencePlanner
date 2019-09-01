@@ -28,7 +28,8 @@ namespace BackEnd
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                    //options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                    options.UseNpgsql(Configuration.GetConnectionString("PostgreSQLConnection"));
                 }
                 else
                 {
