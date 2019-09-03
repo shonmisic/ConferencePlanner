@@ -57,22 +57,14 @@ namespace BackEnd.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadConference([Required, FromForm]string conferenceName, [FromForm]ConferenceFormat format, IFormFile file)
         {
-            try
+            var loader = GetLoader(format);
+
+            using (var stream = file.OpenReadStream())
             {
-                var loader = GetLoader(format);
-
-                using (var stream = file.OpenReadStream())
-                {
-                    await loader.LoadDataAsync(conferenceName, stream, _db);
-                }
-
-                await _db.SaveChangesAsync();
+                await loader.LoadDataAsync(conferenceName, stream, _db);
             }
-            catch (System.Exception e)
-            {
 
-                throw;
-            }
+            await _db.SaveChangesAsync();
 
             return Ok();
         }

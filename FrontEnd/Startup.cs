@@ -38,8 +38,12 @@ namespace FrontEnd
                     options.Conventions.AuthorizeFolder("/Admin", "Admin");
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
-            RegisterHttpRequestCreatingServices(services);
+            
+            services.AddHttpClient<IApiClient, ApiClient>(client =>
+            {
+                client.BaseAddress = new Uri(Configuration["ServiceUrl"]);
+            });
+            services.AddSingleton<IAdminService, AdminService>();
 
             services.AddTransient<RequireLoginFilter>();
             services.AddAuthorization(options =>
@@ -57,15 +61,6 @@ namespace FrontEnd
 
             services.AddMemoryCache();
             services.AddSingleton<MemoryCacheSingleton>();
-        }
-
-        protected virtual void RegisterHttpRequestCreatingServices(IServiceCollection services)
-        {
-            services.AddHttpClient<IApiClient, ApiClient>(client =>
-            {
-                client.BaseAddress = new Uri(Configuration["ServiceUrl"]);
-            });
-            services.AddSingleton<IAdminService, AdminService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

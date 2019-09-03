@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
 
 namespace ConferenceDTO
 {
+    [Serializable]
     public class SearchResult
     {
         public SearchResultType Type { get; set; }

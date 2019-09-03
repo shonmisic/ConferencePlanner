@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 namespace ConferenceDTO
 {
+    [Serializable]
     public class SessionResponse : Session
     {
         public Track Track { get; set; }

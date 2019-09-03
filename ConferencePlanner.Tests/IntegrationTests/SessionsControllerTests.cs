@@ -1,27 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using ConferenceDTO;
+using ConferencePlanner.Tests.WebApplicationFactories;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using BackEnd;
-using ConferenceDTO;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace ConferencePlanner.Tests.IntegrationTests
 {
-    public class SessionsControllerTests : IClassFixture<WebApplicationFactory<Startup>>
+    public class SessionsControllerTests : IClassFixture<WebApplicationFactoryWithInMemory>
     {
-        private readonly WebApplicationFactory<Startup> _factory;
-        private readonly HttpClient _httpClient;
+        protected BaseWebApplicationFactory<TestStartup> Factory { get; }
 
-        public SessionsControllerTests(WebApplicationFactory<Startup> factory)
+        public SessionsControllerTests(WebApplicationFactoryWithInMemory factory)
         {
-            _factory = factory;
-            _httpClient = _factory.CreateClient();
+            Factory = factory;
         }
 
         [Fact]
         public async Task GetSessionsAsyncSuccess()
         {
+            var _httpClient = Factory.CreateClient();
+
             var response = await _httpClient.GetAsync("/api/sessions");
 
             response.EnsureSuccessStatusCode();

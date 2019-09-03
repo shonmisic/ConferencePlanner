@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace ConferenceDTO
 {
+
+    [Serializable]
     public class Image
     {
         public int ID { get; set; }

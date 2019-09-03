@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ConferenceDTO
 {
+    [Serializable]
     public class Session
     {
         public int ID { get; set; }

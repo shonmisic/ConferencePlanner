@@ -6,6 +6,7 @@ using BackEnd;
 using BackEnd.Data;
 using BackEnd.Repositories;
 using ConferenceDTO;
+using Microsoft.Extensions.Caching.Distributed;
 using Moq;
 using Xunit;
 
@@ -24,7 +25,10 @@ namespace ConferencePlanner.Tests.UnitTests.BackEndTests
 
             var sessionsRepositoryStub = new Mock<ISessionsRepository>();
 
-            var controller = new AttendeesController(attendeesRepositoryStub.Object, sessionsRepositoryStub.Object);
+            var cacheStub = new Mock<IDistributedCache>();
+            cacheStub.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync((byte[]) null);
+
+            var controller = new AttendeesController(attendeesRepositoryStub.Object, sessionsRepositoryStub.Object, cacheStub.Object);
 
             var result = (await controller.Get(username)).Value;
             var expectedValue = GetTestAttendeeResponse(username);
