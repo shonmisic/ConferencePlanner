@@ -1,14 +1,11 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using BackEnd.Data;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
-using ConferenceDTO;
 using BackEnd.Infrastructure;
 using BackEnd.Repositories;
+using ConferenceDTO;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
+using System.Threading.Tasks;
 
 namespace BackEnd
 {
@@ -18,24 +15,37 @@ namespace BackEnd
     {
         private readonly IAttendeesRepository _attendeesRepository;
         private readonly ISessionsRepository _sessionsRepository;
+        private readonly IDistributedCache _cache;
 
-        public AttendeesController(IAttendeesRepository attendeesRepository, ISessionsRepository sessionsRepository)
+        private static readonly string _getAttendee = "GetAttendee";
+
+        public AttendeesController(IAttendeesRepository attendeesRepository, ISessionsRepository sessionsRepository, IDistributedCache cache)
         {
             _attendeesRepository = attendeesRepository;
             _sessionsRepository = sessionsRepository;
+            _cache = cache;
         }
 
         [HttpGet("{username}")]
         public async Task<ActionResult<AttendeeResponse>> Get(string username)
         {
-            var attendee = await _attendeesRepository.GetByUsernameAsync(username);
+            var cacheKey = $"{_getAttendee}/{username}";
+            var cachedValue = await _cache.GetAsync(cacheKey);
 
-            if (attendee == null)
+            var result = cachedValue.FromByteArray<AttendeeResponse>();
+            if (result == null)
             {
-                return NotFound();
-            }
+                var attendee = await _attendeesRepository.GetByUsernameAsync(username);
 
-            var result = attendee.MapAttendeeResponse();
+                if (attendee == null)
+                {
+                    return NotFound();
+                }
+
+                result = attendee.MapAttendeeResponse();
+
+                await CacheValue(cacheKey, result);
+            }
 
             return result;
         }
@@ -43,7 +53,7 @@ namespace BackEnd
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AttendeeResponse>> Post(ConferenceDTO.Attendee input)
+        public async Task<ActionResult<AttendeeResponse>> Post(Attendee input)
         {
             // Check if the attendee already exists
             var existingAttendee = await _attendeesRepository.GetByUsernameAsync(input.UserName);
@@ -147,6 +157,14 @@ namespace BackEnd
             var result = newAttendee.MapAttendeeResponse();
 
             return result;
+        }
+
+        private async Task CacheValue<T>(string key, T result)
+        {
+            var valueToCache = result.ToByteArray();
+            var options = new DistributedCacheEntryOptions()
+               .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+            await _cache.SetAsync(key, valueToCache, options);
         }
     }
 }

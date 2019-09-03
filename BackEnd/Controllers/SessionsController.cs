@@ -1,10 +1,12 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using BackEnd.Infrastructure;
 using BackEnd.Repositories;
 using ConferenceDTO;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace BackEnd.Controllers
 {
@@ -13,36 +15,60 @@ namespace BackEnd.Controllers
     public class SessionsController : Controller
     {
         private readonly ISessionsRepository _sessionsRepository;
+        private readonly IDistributedCache _cache;
 
-        public SessionsController(ISessionsRepository sessionsRepository)
+        private static readonly string _getSessions = "GetSessions";
+
+        public SessionsController(ISessionsRepository sessionsRepository, IDistributedCache cache)
         {
             _sessionsRepository = sessionsRepository;
+            _cache = cache;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<SessionResponse>>> Get()
+        public async Task<ActionResult<ICollection<SessionResponse>>> Get()
         {
-            var sessions = (await _sessionsRepository.GetAllAsync())
-                                             .Select(m => m.MapSessionResponse())
-                                             .ToList();
-            return sessions;
+            var cachedValue = await _cache.GetAsync(_getSessions);
+
+            var result = cachedValue.FromByteArray<List<SessionResponse>>();
+            if (result == null)
+            {
+                result = (await _sessionsRepository.GetAllAsync())
+                            .Select(m => m.MapSessionResponse())
+                            .ToList();
+
+                await CacheValue(_getSessions, result);
+            }
+
+            return result;
         }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<SessionResponse>> Get(int id)
         {
-            var session = await _sessionsRepository.GetAsync(id);
+            var cacheKey = $"{_getSessions}/{id}";
+            var cachedValue = await _cache.GetAsync(cacheKey);
 
-            if (session == null)
+            var result = cachedValue.FromByteArray<SessionResponse>();
+            if (result == null)
             {
-                return NotFound();
+                var session = await _sessionsRepository.GetAsync(id);
+
+                if (session == null)
+                {
+                    return NotFound();
+                }
+
+                result = session.MapSessionResponse();
+
+                await CacheValue(cacheKey, result);
             }
 
-            return session.MapSessionResponse();
+            return result;
         }
 
         [HttpPost]
-        public async Task<ActionResult<SessionResponse>> Post(ConferenceDTO.Session input)
+        public async Task<ActionResult<SessionResponse>> Post(Session input)
         {
             var session = await _sessionsRepository.AddAsync(new Data.Session
             {
@@ -60,7 +86,7 @@ namespace BackEnd.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> Put(int id, ConferenceDTO.Session input)
+        public async Task<IActionResult> Put(int id, Session input)
         {
             var session = await _sessionsRepository.GetAsync(id);
 
@@ -87,6 +113,14 @@ namespace BackEnd.Controllers
             await _sessionsRepository.DeleteAsync(id);
 
             return session.MapSessionResponse();
+        }
+
+        private async Task CacheValue<T>(string key, T result)
+        {
+            var valueToCache = result.ToByteArray();
+            var options = new DistributedCacheEntryOptions()
+               .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+            await _cache.SetAsync(key, valueToCache, options);
         }
     }
 }

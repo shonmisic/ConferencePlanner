@@ -1,5 +1,7 @@
-﻿using System.Linq;
-using BackEnd.Data;
+﻿using BackEnd.Data;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace BackEnd.Infrastructure
 {
@@ -109,5 +111,35 @@ namespace BackEnd.Infrastructure
                 UploadDate = image.UploadDate,
                 ImageType = image.ImageType
             };
+
+        public static byte[] ToByteArray<T>(this T obj)
+        {
+            if (obj == null)
+            {
+                return null;
+            }
+
+            var bf = new BinaryFormatter();
+            using (var ms = new MemoryStream())
+            {
+                bf.Serialize(ms, obj);
+
+                return ms.ToArray();
+            }
+        }
+
+        public static T FromByteArray<T>(this byte[] data)
+        {
+            if (data == null)
+            {
+                return default(T);
+            }
+
+            var bf = new BinaryFormatter();
+            using (var ms = new MemoryStream(data))
+            {
+                return (T) bf.Deserialize(ms);
+            }
+        }
     }
 }

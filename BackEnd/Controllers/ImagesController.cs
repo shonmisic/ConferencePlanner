@@ -1,12 +1,12 @@
-﻿using System;
+﻿using BackEnd.Infrastructure;
+using BackEnd.Repositories;
+using ConferenceDTO;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BackEnd.Infrastructure;
-using BackEnd.Repositories;
-using ConferenceDTO;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace BackEnd.Controllers
 {
@@ -15,18 +15,41 @@ namespace BackEnd.Controllers
     public class ImagesController : ControllerBase
     {
         private readonly IImagesRepository _imagesRepository;
+        private readonly IDistributedCache _cache;
 
-        public ImagesController(IImagesRepository imagesRepository)
+        private static readonly string _getImages = "GetImages";
+
+        public ImagesController(IImagesRepository imagesRepository, IDistributedCache cache)
         {
             _imagesRepository = imagesRepository;
+            _cache = cache;
         }
 
         [HttpGet]
         public async Task<ActionResult<ICollection<ImageResponse>>> Get()
         {
-            var images = await _imagesRepository.GetImagesAsync();
+            var cachedValue = await _cache.GetAsync(_getImages);
 
-            return images.Select(i => i.MapImageResponse()).ToList();
+            var result = cachedValue.FromByteArray<List<ImageResponse>>();
+
+            if (result == null)
+            {
+                var images = await _imagesRepository.GetImagesAsync();
+
+                result = images.Select(i => i.MapImageResponse()).ToList();
+
+                await CacheValue(_getImages, result);
+            }
+
+            return result;
+        }
+
+        private async Task CacheValue<T>(string key, T result)
+        {
+            var valueToCache = result.ToByteArray();
+            var options = new DistributedCacheEntryOptions()
+               .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+            await _cache.SetAsync(key, valueToCache, options);
         }
     }
 }
