@@ -2,6 +2,7 @@ using System;
 using FrontEnd.Data;
 using FrontEnd.Filter;
 using FrontEnd.HealthChecks;
+using FrontEnd.Infrastructure;
 using FrontEnd.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -53,6 +54,9 @@ namespace FrontEnd
             services.AddHealthChecks()
                 .AddCheck<BackendHealthChecks>("backend")
                 .AddDbContextCheck<IdentityDbContext>();
+
+            services.AddMemoryCache();
+            services.AddSingleton<MemoryCacheSingleton>();
         }
 
         protected virtual void RegisterHttpRequestCreatingServices(IServiceCollection services)

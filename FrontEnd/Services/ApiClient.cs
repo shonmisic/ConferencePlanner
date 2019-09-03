@@ -1,10 +1,12 @@
-﻿using System;
+﻿using ConferenceDTO;
+using FrontEnd.Infrastructure;
+using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using ConferenceDTO;
 
 namespace FrontEnd.Services
 {
@@ -16,11 +18,18 @@ namespace FrontEnd.Services
         private static readonly string _searchUri = "/api/search";
         private static readonly string _imagesUri = "/api/images";
 
+        private readonly IMemoryCache _cache;
+        private static readonly string _getSessionsKey = "_GetSessions";
+        private static readonly string _getSpeakersKey = "_GetSpeakers";
+        private static readonly string _getSearchResults = "_GetSearchResults";
+        private static readonly string _getImages = "_GetImages";
+
         private readonly HttpClient _httpClient;
 
-        public ApiClient(HttpClient httpClient)
+        public ApiClient(HttpClient httpClient, MemoryCacheSingleton memoryCacheSingleton)
         {
             _httpClient = httpClient;
+            _cache = memoryCacheSingleton.Cache;
         }
 
         public async Task<bool> AddAttendeeAsync(Attendee attendee)
@@ -89,58 +98,100 @@ namespace FrontEnd.Services
             return await response.Content.ReadAsAsync<SessionResponse>();
         }
 
-        public async Task<List<SessionResponse>> GetSessionsAsync()
+        public async Task<ICollection<SessionResponse>> GetSessionsAsync()
         {
-            var response = await _httpClient.GetAsync(_sessionsUri);
-
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadAsAsync<List<SessionResponse>>();
-        }
-
-        public async Task<List<SessionResponse>> GetSessionsByAttendeeAsync(string name)
-        {
-            var attendeeTask = GetAttendeeAsync(name);
-            var sessionsTask = GetSessionsAsync();
-
-            await Task.WhenAll(attendeeTask, sessionsTask);
-
-            var attendee = await attendeeTask;
-            var sessions = await sessionsTask;
-
-            if (attendee == null)
+            if (!_cache.TryGetValue(_getSessionsKey, out ICollection<SessionResponse> sessions))
             {
-                return new List<SessionResponse>();
+                var response = await _httpClient.GetAsync(_sessionsUri);
+
+                response.EnsureSuccessStatusCode();
+
+                sessions = await response.Content.ReadAsAsync<ICollection<SessionResponse>>();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetSize(10240)
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+                _cache.Set(_getSessionsKey, sessions, cacheEntryOptions);
             }
 
-            var sessionIds = attendee.Sessions.Select(s => s.ID);
+            return sessions;
+        }
 
-            sessions.RemoveAll(s => !sessionIds.Contains(s.ID));
+        public async Task<ICollection<SessionResponse>> GetSessionsByAttendeeAsync(string name)
+        {
+            if (!_cache.TryGetValue($"{_getSessionsKey}/{name}", out ICollection<SessionResponse> sessions))
+            {
+                var attendeeTask = GetAttendeeAsync(name);
+                var sessionsTask = GetSessionsAsync();
+
+                await Task.WhenAll(attendeeTask, sessionsTask);
+
+                var attendee = await attendeeTask;
+                sessions = await sessionsTask;
+
+                if (attendee == null)
+                {
+                    return new List<SessionResponse>();
+                }
+
+                var sessionIds = attendee.Sessions.Select(s => s.ID);
+
+                sessions = sessions.Where(s => sessionIds.Contains(s.ID)).ToList();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                   .SetSize(10240)
+                   .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+                _cache.Set(_getSessionsKey, sessions, cacheEntryOptions);
+            }
 
             return sessions;
         }
 
         public async Task<SpeakerResponse> GetSpeakerAsync(int id)
         {
-            var response = await _httpClient.GetAsync($"{_speakersUri}/{id}");
-
-            if (response.StatusCode == HttpStatusCode.NotFound)
+            if (!_cache.TryGetValue($"{_getSpeakersKey}/{id}", out SpeakerResponse speaker))
             {
-                return null;
+                var response = await _httpClient.GetAsync($"{_speakersUri}/{id}");
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+
+                response.EnsureSuccessStatusCode();
+
+                speaker = await response.Content.ReadAsAsync<SpeakerResponse>();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                  .SetSize(1024)
+                  .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+                _cache.Set(_getSpeakersKey, speaker, cacheEntryOptions);
             }
 
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadAsAsync<SpeakerResponse>();
+            return speaker;
         }
 
-        public async Task<List<SpeakerResponse>> GetSpeakersAsync()
+        public async Task<ICollection<SpeakerResponse>> GetSpeakersAsync()
         {
-            var response = await _httpClient.GetAsync(_speakersUri);
+            if (!_cache.TryGetValue(_getSpeakersKey, out ICollection<SpeakerResponse> speakers))
+            {
+                var response = await _httpClient.GetAsync(_speakersUri);
 
-            response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsAsync<List<SpeakerResponse>>();
+                speakers = await response.Content.ReadAsAsync<ICollection<SpeakerResponse>>();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                  .SetSize(10240)
+                  .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+                _cache.Set(_getSpeakersKey, speakers, cacheEntryOptions);
+            }
+
+            return speakers;
         }
 
         public async Task PutSessionAsync(Session session)
@@ -157,18 +208,29 @@ namespace FrontEnd.Services
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task<List<SearchResult>> SearchAsync(string query)
+        public async Task<ICollection<SearchResult>> SearchAsync(string query)
         {
-            var term = new SearchTerm
+            if (!_cache.TryGetValue($"{_getSearchResults}/{query}", out ICollection<SearchResult> searchResults))
             {
-                Query = query
-            };
+                var term = new SearchTerm
+                {
+                    Query = query
+                };
 
-            var response = await _httpClient.PostAsJsonAsync(_searchUri, term);
+                var response = await _httpClient.PostAsJsonAsync(_searchUri, term);
 
-            response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsAsync<List<SearchResult>>();
+                searchResults = await response.Content.ReadAsAsync<ICollection<SearchResult>>();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                  .SetSize(10240)
+                  .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+                _cache.Set(_getSearchResults, searchResults, cacheEntryOptions);
+            }
+
+            return searchResults;
         }
 
         public async Task<bool> CheckHealthAsync()
@@ -178,7 +240,6 @@ namespace FrontEnd.Services
                 var response = await _httpClient.GetStringAsync("/health");
 
                 return string.Equals(response, "Healthy", StringComparison.OrdinalIgnoreCase);
-
             }
             catch
             {
@@ -188,11 +249,22 @@ namespace FrontEnd.Services
 
         public async Task<ICollection<ImageResponse>> GetImagesAsync()
         {
-            var response = await _httpClient.GetAsync(_imagesUri);
+            if (!_cache.TryGetValue(_getImages, out ICollection<ImageResponse> images))
+            {
+                var response = await _httpClient.GetAsync(_imagesUri);
 
-            response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsAsync<ICollection<ImageResponse>>();
+                images = await response.Content.ReadAsAsync<ICollection<ImageResponse>>();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                  .SetSize(102400)
+                  .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+                _cache.Set(_getImages, images, cacheEntryOptions);
+            }
+
+            return images;
         }
 
         public async Task AddImageToAttendeeAsync(string username, ImageRequest imageRequest)
