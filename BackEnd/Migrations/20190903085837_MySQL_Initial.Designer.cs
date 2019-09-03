@@ -3,29 +3,25 @@ using System;
 using BackEnd.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BackEnd.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20190822100709_AddImages")]
-    partial class AddImages
+    [Migration("20190903085837_MySQL_Initial")]
+    partial class MySQL_Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079");
 
             modelBuilder.Entity("BackEnd.Data.Attendee", b =>
                 {
                     b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("EmailAddress")
                         .IsRequired()
@@ -54,8 +50,7 @@ namespace BackEnd.Migrations
             modelBuilder.Entity("BackEnd.Data.Conference", b =>
                 {
                     b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -82,12 +77,14 @@ namespace BackEnd.Migrations
             modelBuilder.Entity("BackEnd.Data.Image", b =>
                 {
                     b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<int>("AttendeeId");
 
                     b.Property<string>("Content")
+                        .IsRequired();
+
+                    b.Property<string>("ImageType")
                         .IsRequired();
 
                     b.Property<string>("Name")
@@ -106,8 +103,7 @@ namespace BackEnd.Migrations
             modelBuilder.Entity("BackEnd.Data.Session", b =>
                 {
                     b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("Abstract")
                         .HasMaxLength(4000);
@@ -175,8 +171,7 @@ namespace BackEnd.Migrations
             modelBuilder.Entity("BackEnd.Data.Speaker", b =>
                 {
                     b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("Bio")
                         .HasMaxLength(4000);
@@ -200,8 +195,7 @@ namespace BackEnd.Migrations
             modelBuilder.Entity("BackEnd.Data.Tag", b =>
                 {
                     b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -215,8 +209,7 @@ namespace BackEnd.Migrations
             modelBuilder.Entity("BackEnd.Data.Track", b =>
                 {
                     b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .ValueGeneratedOnAdd();
 
                     b.Property<int>("ConferenceId");
 

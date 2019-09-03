@@ -18,8 +18,10 @@ namespace FrontEnd.Areas.Identity
                 services.AddDbContext<IdentityDbContext>(options =>
                     //options.UseSqlServer(
                     //    context.Configuration.GetConnectionString("IdentityDbContextConnection")));
-                    options.UseNpgsql(
-                        context.Configuration.GetConnectionString("PostgreSQLConnection")));
+                    //options.UseNpgsql(
+                    //    context.Configuration.GetConnectionString("PostgreSQLConnection")));
+                    options.UseMySql(
+                        context.Configuration.GetConnectionString("MySQLConnection")));
 
                 services.AddDefaultIdentity<User>(options =>
                     {

@@ -1,24 +1,18 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace BackEnd.Migrations
 {
-    public partial class Refactor : Migration
+    public partial class MySQL_Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "ConferenceID",
-                table: "Speakers",
-                nullable: true);
-
             migrationBuilder.CreateTable(
                 name: "Attendees",
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySQL:AutoIncrement", true),
                     FirstName = table.Column<string>(maxLength: 200, nullable: false),
                     LastName = table.Column<string>(maxLength: 200, nullable: false),
                     UserName = table.Column<string>(maxLength: 200, nullable: false),
@@ -34,7 +28,7 @@ namespace BackEnd.Migrations
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySQL:AutoIncrement", true),
                     Name = table.Column<string>(maxLength: 200, nullable: false)
                 },
                 constraints: table =>
@@ -47,12 +41,35 @@ namespace BackEnd.Migrations
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySQL:AutoIncrement", true),
                     Name = table.Column<string>(maxLength: 32, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tags", x => x.ID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Images",
+                columns: table => new
+                {
+                    ID = table.Column<int>(nullable: false)
+                        .Annotation("MySQL:AutoIncrement", true),
+                    Name = table.Column<string>(maxLength: 100, nullable: false),
+                    UploadDate = table.Column<DateTimeOffset>(nullable: false),
+                    Content = table.Column<string>(nullable: false),
+                    ImageType = table.Column<string>(nullable: false),
+                    AttendeeId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Images", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_Images_Attendees_AttendeeId",
+                        column: x => x.AttendeeId,
+                        principalTable: "Attendees",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -80,11 +97,33 @@ namespace BackEnd.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Speakers",
+                columns: table => new
+                {
+                    ID = table.Column<int>(nullable: false)
+                        .Annotation("MySQL:AutoIncrement", true),
+                    Name = table.Column<string>(maxLength: 200, nullable: false),
+                    Bio = table.Column<string>(maxLength: 4000, nullable: true),
+                    WebSite = table.Column<string>(maxLength: 1000, nullable: true),
+                    ConferenceID = table.Column<int>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Speakers", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_Speakers_Conferences_ConferenceID",
+                        column: x => x.ConferenceID,
+                        principalTable: "Conferences",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Tracks",
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySQL:AutoIncrement", true),
                     ConferenceId = table.Column<int>(nullable: false),
                     Name = table.Column<string>(maxLength: 200, nullable: false)
                 },
@@ -104,23 +143,23 @@ namespace BackEnd.Migrations
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySQL:AutoIncrement", true),
+                    ConferenceId = table.Column<int>(nullable: false),
                     Title = table.Column<string>(maxLength: 200, nullable: false),
                     Abstract = table.Column<string>(maxLength: 4000, nullable: true),
                     StartTime = table.Column<DateTimeOffset>(nullable: true),
                     EndTime = table.Column<DateTimeOffset>(nullable: true),
-                    TrackId = table.Column<int>(nullable: true),
-                    ConferenceID = table.Column<int>(nullable: true)
+                    TrackId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Sessions", x => x.ID);
                     table.ForeignKey(
-                        name: "FK_Sessions_Conferences_ConferenceID",
-                        column: x => x.ConferenceID,
+                        name: "FK_Sessions_Conferences_ConferenceId",
+                        column: x => x.ConferenceId,
                         principalTable: "Conferences",
                         principalColumn: "ID",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Sessions_Tracks_TrackId",
                         column: x => x.TrackId,
@@ -202,11 +241,6 @@ namespace BackEnd.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Speakers_ConferenceID",
-                table: "Speakers",
-                column: "ConferenceID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Attendees_UserName",
                 table: "Attendees",
                 column: "UserName",
@@ -218,14 +252,19 @@ namespace BackEnd.Migrations
                 column: "AttendeeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Images_AttendeeId",
+                table: "Images",
+                column: "AttendeeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SessionAttendee_AttendeeId",
                 table: "SessionAttendee",
                 column: "AttendeeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Sessions_ConferenceID",
+                name: "IX_Sessions_ConferenceId",
                 table: "Sessions",
-                column: "ConferenceID");
+                column: "ConferenceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_TrackId",
@@ -243,27 +282,23 @@ namespace BackEnd.Migrations
                 column: "TagId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Speakers_ConferenceID",
+                table: "Speakers",
+                column: "ConferenceID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Tracks_ConferenceId",
                 table: "Tracks",
                 column: "ConferenceId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Speakers_Conferences_ConferenceID",
-                table: "Speakers",
-                column: "ConferenceID",
-                principalTable: "Conferences",
-                principalColumn: "ID",
-                onDelete: ReferentialAction.Restrict);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Speakers_Conferences_ConferenceID",
-                table: "Speakers");
-
             migrationBuilder.DropTable(
                 name: "ConferenceAttendee");
+
+            migrationBuilder.DropTable(
+                name: "Images");
 
             migrationBuilder.DropTable(
                 name: "SessionAttendee");
@@ -278,6 +313,9 @@ namespace BackEnd.Migrations
                 name: "Attendees");
 
             migrationBuilder.DropTable(
+                name: "Speakers");
+
+            migrationBuilder.DropTable(
                 name: "Sessions");
 
             migrationBuilder.DropTable(
@@ -288,14 +326,6 @@ namespace BackEnd.Migrations
 
             migrationBuilder.DropTable(
                 name: "Conferences");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Speakers_ConferenceID",
-                table: "Speakers");
-
-            migrationBuilder.DropColumn(
-                name: "ConferenceID",
-                table: "Speakers");
         }
     }
 }

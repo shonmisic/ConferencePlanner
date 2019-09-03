@@ -9,6 +9,8 @@
   <ItemGroup>
     <Compile Remove="Migrations\20190901164025_PostgreSQL.cs" />
     <Compile Remove="Migrations\20190901164025_PostgreSQL.Designer.cs" />
+    <Compile Remove="Migrations\20190903085017_MySQL_Initial.cs" />
+    <Compile Remove="Migrations\20190903085017_MySQL_Initial.Designer.cs" />
   </ItemGroup>
 
 
@@ -20,6 +22,7 @@
     <PackageReference Include="Npgsql" Version="4.0.9" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.Design" Version="1.1.1" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.2.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
     <PackageReference Include="Serilog.Sinks.ColoredConsole" />
