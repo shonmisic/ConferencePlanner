@@ -75,7 +75,7 @@ namespace FrontEnd.Pages
             return RedirectToPage();
         }
 
-        protected virtual Task<List<SessionResponse>> GetSessionsAsync()
+        protected virtual Task<ICollection<SessionResponse>> GetSessionsAsync()
         {
             _logger.LogDebug("GetSessionsAsync was called");
 

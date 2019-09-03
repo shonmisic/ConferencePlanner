@@ -69,7 +69,7 @@ namespace ConferencePlanner.Tests.Mocks
             });
         }
 
-        public async Task<List<SessionResponse>> GetSessionsAsync()
+        public async Task<ICollection<SessionResponse>> GetSessionsAsync()
         {
             return await Task.FromResult(new List<SessionResponse>
                 {
@@ -107,9 +107,9 @@ namespace ConferencePlanner.Tests.Mocks
             );
         }
 
-        public Task<List<SessionResponse>> GetSessionsByAttendeeAsync(string name)
+        public Task<ICollection<SessionResponse>> GetSessionsByAttendeeAsync(string name)
         {
-            return Task.FromResult(new List<SessionResponse>
+            return Task.FromResult<ICollection<SessionResponse>>(new List<SessionResponse>
                 {
                     new SessionResponse
                     {
@@ -150,7 +150,7 @@ namespace ConferencePlanner.Tests.Mocks
             throw new NotImplementedException();
         }
 
-        public Task<List<SpeakerResponse>> GetSpeakersAsync()
+        public Task<ICollection<SpeakerResponse>> GetSpeakersAsync()
         {
             throw new NotImplementedException();
         }
@@ -165,7 +165,7 @@ namespace ConferencePlanner.Tests.Mocks
             throw new NotImplementedException();
         }
 
-        public Task<List<SearchResult>> SearchAsync(string query)
+        public Task<ICollection<SearchResult>> SearchAsync(string query)
         {
             throw new NotImplementedException();
         }
