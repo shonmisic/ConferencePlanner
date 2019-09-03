@@ -1,12 +1,12 @@
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 using BackEnd.Data;
 using ConferenceDTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BackEnd.Controllers
 {
@@ -57,14 +57,22 @@ namespace BackEnd.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadConference([Required, FromForm]string conferenceName, [FromForm]ConferenceFormat format, IFormFile file)
         {
-            var loader = GetLoader(format);
-
-            using (var stream = file.OpenReadStream())
+            try
             {
-                await loader.LoadDataAsync(conferenceName, stream, _db);
-            }
+                var loader = GetLoader(format);
 
-            await _db.SaveChangesAsync();
+                using (var stream = file.OpenReadStream())
+                {
+                    await loader.LoadDataAsync(conferenceName, stream, _db);
+                }
+
+                await _db.SaveChangesAsync();
+            }
+            catch (System.Exception e)
+            {
+
+                throw;
+            }
 
             return Ok();
         }
