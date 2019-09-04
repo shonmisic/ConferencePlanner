@@ -1,13 +1,15 @@
 ﻿using System;
 using BackEnd.Data;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ConferencePlanner.Tests.WebApplicationFactories
 {
-    public class WebApplicationFactoryWithInMemory : BaseWebApplicationFactory<TestStartup>
+    public class BackEndWebApplicationFactoryWithInMemory : WebApplicationFactory<TestStartup>
     {
         private readonly InMemoryDatabaseRoot _databaseRoot = new InMemoryDatabaseRoot();
         private readonly string _connectionString = Guid.NewGuid().ToString();
@@ -23,5 +25,8 @@ namespace ConferencePlanner.Tests.WebApplicationFactories
                         options.UseInternalServiceProvider(services.BuildServiceProvider());
                     });
             });
+
+        protected override IWebHostBuilder CreateWebHostBuilder() =>
+            WebHost.CreateDefaultBuilder().UseStartup<TestStartup>();
     }
 }

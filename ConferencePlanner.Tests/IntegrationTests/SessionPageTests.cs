@@ -1,32 +1,20 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
-using ConferencePlanner.Tests.Mocks;
-using FrontEnd;
-using FrontEnd.Services;
+﻿using ConferencePlanner.Tests.WebApplicationFactories;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ConferencePlanner.Tests.IntegrationTests
 {
-    public class SessionPageTests : IClassFixture<WebApplicationFactory<Startup>>
+    public class SessionPageTests : IClassFixture<FrontEndWebApplicationFactory>
     {
-        private readonly WebApplicationFactory<Startup> _factory;
+        private readonly FrontEndWebApplicationFactory _factory;
         private readonly HttpClient _httpClient;
 
-        public SessionPageTests(WebApplicationFactory<Startup> factory)
+        public SessionPageTests(FrontEndWebApplicationFactory factory)
         {
             _factory = factory;
             _httpClient = _factory
-                .WithWebHostBuilder(builder =>
-                {
-                    builder.ConfigureTestServices(services =>
-                    {
-                        services.AddTransient<IApiClient, MockApiClient>();
-                        services.AddSingleton<IAdminService, MockAdminService>();
-                    });
-                })
                 .CreateClient(new WebApplicationFactoryClientOptions
                 {
                     AllowAutoRedirect = false

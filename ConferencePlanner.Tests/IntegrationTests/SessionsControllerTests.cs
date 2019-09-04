@@ -7,11 +7,11 @@ using Xunit;
 
 namespace ConferencePlanner.Tests.IntegrationTests
 {
-    public class SessionsControllerTests : IClassFixture<WebApplicationFactoryWithInMemory>
+    public class SessionsControllerTests : IClassFixture<BackEndWebApplicationFactoryWithInMemory>
     {
-        protected BaseWebApplicationFactory<TestStartup> Factory { get; }
+        protected BackEndWebApplicationFactoryWithInMemory Factory { get; }
 
-        public SessionsControllerTests(WebApplicationFactoryWithInMemory factory)
+        public SessionsControllerTests(BackEndWebApplicationFactoryWithInMemory factory)
         {
             Factory = factory;
         }
