@@ -2,11 +2,14 @@
 using BackEnd.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Swashbuckle.AspNetCore.Swagger;
+using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -28,7 +31,11 @@ namespace BackEnd
         {
             ConfigureDatabaseServices(services);
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddResponseCaching();
+
+            services.AddMvc(options => options.RespectBrowserAcceptHeader = true)
+                    .AddXmlDataContractSerializerFormatters()
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddSwaggerGen(options =>
                 options.SwaggerDoc("v1", new Info { Title = "Conference Planner API", Version = "v1" })
@@ -92,6 +99,22 @@ namespace BackEnd
                 var context = app.ApplicationServices.GetService<ApplicationDbContext>();
                 context.Database.EnsureCreated();
             }
+
+            app.UseResponseCaching();
+
+            app.Use(async (context, next) =>
+            {
+                context.Response.GetTypedHeaders().CacheControl =
+                    new CacheControlHeaderValue
+                    {
+                        Public = true,
+                        MaxAge = TimeSpan.FromSeconds(10)
+                    };
+                context.Response.Headers[HeaderNames.Vary] =
+                    new string[] { "Accept-Encoding" };
+
+                await next();
+            });
 
             app.UseSwagger();
 

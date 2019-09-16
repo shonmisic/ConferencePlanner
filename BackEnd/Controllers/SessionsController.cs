@@ -26,14 +26,21 @@ namespace BackEnd.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ICollection<SessionResponse>>> Get()
+        [Produces("application/xml", "application/json", "text/json", "text/plain")]
+        public async Task<ActionResult<ICollection<SessionResponse>>> Get(DateTimeOffset? fromDate = null, 
+            DateTimeOffset? toDate = null)
         {
-            var cachedValue = await _cache.GetAsync(_getSessions);
+            fromDate = fromDate ?? DateTimeOffset.MinValue;
+            toDate = toDate ?? DateTimeOffset.MaxValue;
+
+            var cachedValue = await _cache.GetAsync(string.Format("{0}, from:{1}, to:{2}", _getSessions, fromDate, toDate));
 
             var result = cachedValue.FromByteArray<List<SessionResponse>>();
+            
             if (result == null)
             {
                 result = (await _sessionsRepository.GetAllAsync())
+                            .Where(s => IsWithinDateRange(fromDate, toDate, s))
                             .Select(m => m.MapSessionResponse())
                             .ToList();
 
@@ -41,6 +48,17 @@ namespace BackEnd.Controllers
             }
 
             return result;
+        }
+
+        private static bool IsWithinDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate, Data.Session s)
+        {
+            var startTime = s.StartTime ?? DateTimeOffset.MinValue;
+            var endTime = s.EndTime ?? DateTimeOffset.MaxValue;
+
+            var res1 = startTime.CompareTo(fromDate.Value) >= 0;
+                var res2 = endTime.CompareTo(toDate.Value) <= 0;
+
+            return res1 && res2;
         }
 
         [HttpGet("{id:int}")]
