@@ -26,7 +26,6 @@ namespace BackEnd.Controllers
         }
 
         [HttpGet]
-        [Produces("application/xml", "application/json", "text/json", "text/plain")]
         public async Task<ActionResult<ICollection<SessionResponse>>> Get(DateTimeOffset? fromDate = null, 
             DateTimeOffset? toDate = null)
         {
@@ -48,17 +47,6 @@ namespace BackEnd.Controllers
             }
 
             return result;
-        }
-
-        private static bool IsWithinDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate, Data.Session s)
-        {
-            var startTime = s.StartTime ?? DateTimeOffset.MinValue;
-            var endTime = s.EndTime ?? DateTimeOffset.MaxValue;
-
-            var res1 = startTime.CompareTo(fromDate.Value) >= 0;
-                var res2 = endTime.CompareTo(toDate.Value) <= 0;
-
-            return res1 && res2;
         }
 
         [HttpGet("{id:int}")]
@@ -139,6 +127,15 @@ namespace BackEnd.Controllers
             var options = new DistributedCacheEntryOptions()
                .SetSlidingExpiration(TimeSpan.FromMinutes(1));
             await _cache.SetAsync(key, valueToCache, options);
+        }
+
+        private static bool IsWithinDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate, Data.Session s)
+        {
+            var startTime = s.StartTime ?? DateTimeOffset.MinValue;
+            var endTime = s.EndTime ?? DateTimeOffset.MaxValue;
+
+            return startTime.CompareTo(fromDate.Value) >= 0 
+                && endTime.CompareTo(toDate.Value) <= 0;
         }
     }
 }
