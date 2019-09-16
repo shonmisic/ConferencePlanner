@@ -7,6 +7,8 @@ namespace BackEnd.Infrastructure
 {
     public static class EntityExtensions
     {
+        private static readonly object _baseUrlFrontEnd = "https://localhost:44354";
+
         public static ConferenceDTO.SessionResponse MapSessionResponse(this Session session) =>
             new ConferenceDTO.SessionResponse
             {
@@ -50,7 +52,8 @@ namespace BackEnd.Infrastructure
                         new ConferenceDTO.Session
                         {
                             ID = ss.SessionId,
-                            Title = ss.Session.Title
+                            Title = ss.Session.Title,
+                            Url = $"{_baseUrlFrontEnd}/Sessions/{ss.SessionId}"
                         })
                     .ToList()
             };
@@ -69,7 +72,8 @@ namespace BackEnd.Infrastructure
                             ID = sa.Session.ID,
                             Title = sa.Session.Title,
                             StartTime = sa.Session.StartTime,
-                            EndTime = sa.Session.EndTime
+                            EndTime = sa.Session.EndTime,
+                            Url = $"{_baseUrlFrontEnd}/Sessions/{sa.SessionId}"
                         })
                     .ToList(),
                 Conferences = attendee.ConferenceAttendees?
@@ -77,7 +81,8 @@ namespace BackEnd.Infrastructure
                         new ConferenceDTO.Conference
                         {
                             ID = ca.Conference.ID,
-                            Name = ca.Conference.Name
+                            Name = ca.Conference.Name,
+                            Url = $"{_baseUrlFrontEnd}/Conferences/{ca.ConferenceId}"
                         })
                     .ToList(),
                 Images = attendee.Images?
@@ -89,6 +94,7 @@ namespace BackEnd.Infrastructure
                             UploadDate = i.UploadDate,
                             Content = i.Content,
                             Name = i.Name,
+                            Url = $"{_baseUrlFrontEnd}/Images/{i.ID}"
                         })
                     .ToList(),
             };
@@ -103,6 +109,7 @@ namespace BackEnd.Infrastructure
                     FirstName = image.Attendee.FirstName,
                     LastName = image.Attendee.LastName,
                     UserName = image.Attendee.UserName,
+                    Url = $"{_baseUrlFrontEnd}/Conferences/{image.AttendeeId}",
                 },
                 AttendeeId = image.AttendeeId,
                 Content = image.Content,

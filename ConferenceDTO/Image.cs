@@ -24,5 +24,7 @@ namespace ConferenceDTO
 
         [Required]
         public int AttendeeId { get; set; }
+
+        public string Url { get; set; }
     }
 }

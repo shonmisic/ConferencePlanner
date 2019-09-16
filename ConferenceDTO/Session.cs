@@ -25,5 +25,7 @@ namespace ConferenceDTO
         public TimeSpan Duration => EndTime?.Subtract(StartTime ?? EndTime ?? DateTimeOffset.MinValue) ?? TimeSpan.Zero;
 
         public int? TrackId { get; set; }
+
+        public string Url { get; set; }
     }
 }
