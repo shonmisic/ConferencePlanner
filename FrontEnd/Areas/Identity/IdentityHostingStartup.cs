@@ -34,11 +34,11 @@ namespace FrontEnd.Areas.Identity
                     .AddEntityFrameworkStores<IdentityDbContext>()
                     .AddClaimsPrincipalFactory<ClaimsPrincipalFactory>();
 
-                services.AddAuthentication().AddFacebook(facebookOptions =>
-                {
-                    facebookOptions.AppId = context.Configuration["Authentication:Facebook:AppId"];
-                    facebookOptions.AppSecret = context.Configuration["Authentication:Facebook:AppSecret"];
-                });
+                //services.AddAuthentication().AddFacebook(facebookOptions =>
+                //{
+                //    facebookOptions.AppId = context.Configuration["Authentication:Facebook:AppId"];
+                //    facebookOptions.AppSecret = context.Configuration["Authentication:Facebook:AppSecret"];
+                //});
             });
         }
     }

@@ -28,20 +28,28 @@ namespace BackEnd.Controllers
         [HttpGet]
         public async Task<ActionResult<ICollection<ImageResponse>>> Get()
         {
-            var cachedValue = await _cache.GetAsync(_getImages);
-
-            var result = cachedValue.FromByteArray<List<ImageResponse>>();
-
-            if (result == null)
+            try
             {
-                var images = await _imagesRepository.GetImagesAsync();
+                var cachedValue = await _cache.GetAsync(_getImages);
 
-                result = images.Select(i => i.MapImageResponse()).ToList();
+                var result = cachedValue.FromByteArray<List<ImageResponse>>();
 
-                await CacheValue(_getImages, result);
+                if (result == null)
+                {
+                    var images = await _imagesRepository.GetImagesAsync();
+
+                    result = images.Select(i => i.MapImageResponse()).ToList();
+
+                    await CacheValue(_getImages, result);
+                }
+
+                return result;
             }
+            catch (Exception e)
+            {
 
-            return result;
+                throw e;
+            }
         }
 
         private async Task CacheValue<T>(string key, T result)

@@ -3,13 +3,17 @@ using FrontEnd.Data;
 using FrontEnd.Filter;
 using FrontEnd.HealthChecks;
 using FrontEnd.Infrastructure;
+using FrontEnd.Pages;
 using FrontEnd.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
+using static FrontEnd.Infrastructure.FriendlyUrlHelper;
 
 namespace FrontEnd
 {
@@ -36,13 +40,23 @@ namespace FrontEnd
                 .AddRazorPagesOptions(options =>
                 {
                     options.Conventions.AuthorizeFolder("/Admin", "Admin");
+                    options.Conventions.Add(
+                        new PageRouteTransformerConvention(
+                            new SlugifyParameterTransformer()));
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             
             services.AddHttpClient<IApiClient, ApiClient>(client =>
             {
                 client.BaseAddress = new Uri(Configuration["ServiceUrl"]);
-            });
+            })
+            .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
+            {
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromSeconds(5),
+                TimeSpan.FromSeconds(10),
+            }));
+
             services.AddSingleton<IAdminService, AdminService>();
 
             services.AddTransient<RequireLoginFilter>();

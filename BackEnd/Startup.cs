@@ -33,7 +33,7 @@ namespace BackEnd
 
             services.AddResponseCaching();
 
-            services.AddMvc(options => options.RespectBrowserAcceptHeader = true)
+            services.AddMvc()
                     .AddXmlDataContractSerializerFormatters()
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
