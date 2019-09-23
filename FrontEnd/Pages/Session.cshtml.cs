@@ -21,7 +21,7 @@ namespace FrontEnd.Pages
         public int? DayOffset { get; set; }
         public bool IsInPersonalAgenda { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int id)
+        public async Task<IActionResult> OnGetAsync(int id, int conferenceId)
         {
             Session = await _apiClient.GetSessionAsync(id);
 
@@ -30,13 +30,13 @@ namespace FrontEnd.Pages
                 return RedirectToPage("/Index");
             }
 
-            var allSessions = await _apiClient.GetSessionsAsync();
+            var allSessions = await _apiClient.GetSessionsAsync(conferenceId);
 
             var startDate = allSessions.Min(s => s.StartTime?.Date);
 
             DayOffset = Session.StartTime?.Subtract(startDate ?? DateTimeOffset.MinValue).Days;
 
-            var sessions = await _apiClient.GetSessionsByAttendeeAsync(User.Identity.Name);
+            var sessions = await _apiClient.GetSessionsByAttendeeAsync(User.Identity.Name, conferenceId);
 
             IsInPersonalAgenda = sessions.Any(s => s.ID == id);
 

@@ -45,6 +45,16 @@ namespace ConferencePlanner.Tests.Mocks
             });
         }
 
+        public Task<ConferenceResponse> GetConference(int conferenceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<ConferenceResponse>> GetConferencesForFollowingFiveDays()
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<ICollection<ImageResponse>> GetImagesAsync()
         {
             throw new NotImplementedException();
@@ -69,7 +79,7 @@ namespace ConferencePlanner.Tests.Mocks
             });
         }
 
-        public async Task<ICollection<SessionResponse>> GetSessionsAsync()
+        public async Task<ICollection<SessionResponse>> GetSessionsAsync(int? conferenceId = null)
         {
             return await Task.FromResult(new List<SessionResponse>
                 {
@@ -107,7 +117,7 @@ namespace ConferencePlanner.Tests.Mocks
             );
         }
 
-        public Task<ICollection<SessionResponse>> GetSessionsByAttendeeAsync(string name)
+        public Task<ICollection<SessionResponse>> GetSessionsByAttendeeAsync(string name, int? conferenceId = null)
         {
             return Task.FromResult<ICollection<SessionResponse>>(new List<SessionResponse>
                 {
@@ -151,6 +161,11 @@ namespace ConferencePlanner.Tests.Mocks
         }
 
         public Task<ICollection<SpeakerResponse>> GetSpeakersAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ICollection<TrackResponse>> GetTracks(int conferenceId)
         {
             throw new NotImplementedException();
         }

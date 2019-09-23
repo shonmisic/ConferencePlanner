@@ -18,28 +18,28 @@ namespace BackEnd.Controllers
         private readonly ITracksRepository _tracksRepository;
         private readonly IDistributedCache _cache;
 
-        private static readonly string _getTracks = "GetTracks";
+        private static readonly string _getConferences = "GetConferences";
 
-        public TracksController(ITracksRepository sessionsRepository, IDistributedCache cache)
+        public TracksController(ITracksRepository tracksRepository, IDistributedCache cache)
         {
-            _tracksRepository = sessionsRepository;
+            _tracksRepository = tracksRepository;
             _cache = cache;
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<TrackResponse>> Get(int conferenceId)
+        [HttpGet("{conferenceId:int}")]
+        public async Task<ActionResult<ICollection<TrackResponse>>> Get(int conferenceId)
         {
-            var cacheKey = $"{_getTracks}/{conferenceId}";
+            var cacheKey = $"{_getConferences}/{conferenceId}";
             var cachedValue = await _cache.GetAsync(cacheKey);
 
-            var result = cachedValue.FromByteArray<TrackResponse>();
+            var result = cachedValue.FromByteArray<List<TrackResponse>>();
             if (result == null)
             {
-                var tracks = (await _tracksRepository.GetByConferenceIdAsync(conferenceId))
+                result = (await _tracksRepository.GetByConferenceIdAsync(conferenceId))
                                                     .Select(t => t.MapTrackResponse())
                                                     .ToList();
 
-                if (tracks == null)
+                if (result == null)
                 {
                     return NotFound();
                 }

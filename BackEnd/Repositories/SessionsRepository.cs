@@ -17,7 +17,17 @@ namespace BackEnd.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<Session> GetAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
+        public IQueryable<Session> GetAll()
+        {
+            return _dbContext.Sessions.Include(s => s.Conference)
+                                        .Include(s => s.SessionSpeakers)
+                                            .ThenInclude(ss => ss.Speaker)
+                                        .Include(s => s.Track)
+                                        .Include(s => s.SessionTags)
+                                            .ThenInclude(ss => ss.Tag);
+        }
+
+        public async Task<Session> GetByIdAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await _dbContext.Sessions.AsNoTracking()
                                             .Include(s => s.Track)
@@ -28,7 +38,7 @@ namespace BackEnd.Repositories
                                             .SingleOrDefaultAsync(s => s.ID == id);
         }
 
-        public async Task<ICollection<Session>> GetAllAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ICollection<Session>> GetByConferenceIdAsync(int conferenceId, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await _dbContext.Sessions.AsNoTracking()
                                             .Include(s => s.Track)
@@ -36,6 +46,7 @@ namespace BackEnd.Repositories
                                                .ThenInclude(ss => ss.Speaker)
                                             .Include(s => s.SessionTags)
                                                .ThenInclude(st => st.Tag)
+                                            .Where(s => s.ConferenceId == conferenceId)
                                             .ToListAsync();
         }
 
@@ -67,6 +78,7 @@ namespace BackEnd.Repositories
         public async Task DeleteAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
         {
             var session = await _dbContext.Sessions.FindAsync(id);
+
             _dbContext.Sessions.Remove(session);
 
             await _dbContext.SaveChangesAsync();

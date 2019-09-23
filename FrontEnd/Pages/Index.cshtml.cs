@@ -22,6 +22,8 @@ namespace FrontEnd.Pages
             _logger = logger;
         }
 
+        public IEnumerable<ConferenceResponse> Conferences {get;set;}
+        public ConferenceResponse SelectedConference { get; set; }
         public IEnumerable<IGrouping<DateTimeOffset?, SessionResponse>> Sessions { get; set; }
         public IEnumerable<(int Offset, DayOfWeek? DayOfWeek)> DayOffsets { get; set; }
         public int CurrentDayOffset { get; set; }
@@ -32,7 +34,7 @@ namespace FrontEnd.Pages
         public string Message { get; set; }
         public bool ShowMessage => !string.IsNullOrEmpty(Message);
 
-        public async Task OnGet(int day = 0)
+        public async Task OnGet(int id = 0, int day = 0)
         {
             _logger.LogDebug("OnGet was called");
 
@@ -40,10 +42,19 @@ namespace FrontEnd.Pages
 
             CurrentDayOffset = day;
 
-            var userSessions = await _apiClient.GetSessionsByAttendeeAsync(User.Identity.Name);
+            Conferences = await _apiClient.GetConferencesForFollowingFiveDays();
+
+            SelectedConference = Conferences.SingleOrDefault(c => c.ID == id);
+
+            if (SelectedConference == null)
+            {
+                return;
+            }
+
+            var userSessions = await _apiClient.GetSessionsByAttendeeAsync(User.Identity.Name, SelectedConference.ID);
             UserSessions = userSessions.Select(s => s.ID).ToList();
 
-            var sessions = await GetSessionsAsync();
+            var sessions = await GetSessionsAsync(SelectedConference.ID);
 
             var startDate = sessions.Min(s => s.StartTime?.Date);
             var endDate = sessions.Max(s => s.EndTime?.Date);
@@ -75,11 +86,11 @@ namespace FrontEnd.Pages
             return RedirectToPage();
         }
 
-        protected virtual Task<ICollection<SessionResponse>> GetSessionsAsync()
+        protected virtual Task<ICollection<SessionResponse>> GetSessionsAsync(int conferenceId)
         {
             _logger.LogDebug("GetSessionsAsync was called");
 
-            return _apiClient.GetSessionsAsync();
+            return _apiClient.GetSessionsAsync(conferenceId);
         }
     }
 }

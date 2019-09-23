@@ -47,6 +47,7 @@ namespace BackEnd
             services.AddTransient<IAttendeesRepository, AttendeesRepository>();
             services.AddTransient<ISessionsRepository, SessionsRepository>();
             services.AddTransient<IImagesRepository, ImagesRepository>();
+            services.AddTransient<ITracksRepository, TracksRepository>();
 
             if (Environment.IsDevelopment())
             {

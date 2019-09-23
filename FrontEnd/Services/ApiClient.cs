@@ -17,15 +17,17 @@ namespace FrontEnd.Services
         private static readonly string _speakersUri = "/api/speakers";
         private static readonly string _searchUri = "/api/search";
         private static readonly string _imagesUri = "/api/images";
-        private static readonly string _tracksUri = "/api/images";
+        private static readonly string _tracksUri = "/api/tracks";
+        private static readonly string _conferencesUri = "/api/conferences";
 
-        private readonly IMemoryCache _cache;
         private static readonly string _getSessionsKey = "_GetSessions";
         private static readonly string _getSpeakersKey = "_GetSpeakers";
         private static readonly string _getSearchResults = "_GetSearchResults";
         private static readonly string _getImages = "_GetImages";
         private static readonly string _getTracks = "_GetTracks";
+        private static readonly string _getConferences = "_GetConferences";
 
+        private readonly IMemoryCache _cache;
         private readonly HttpClient _httpClient;
 
         public ApiClient(HttpClient httpClient, MemoryCacheSingleton memoryCacheSingleton)
@@ -100,11 +102,13 @@ namespace FrontEnd.Services
             return await response.Content.ReadAsJsonAsync<SessionResponse>();
         }
 
-        public async Task<ICollection<SessionResponse>> GetSessionsAsync()
+        public async Task<ICollection<SessionResponse>> GetSessionsAsync(int? conferenceId = null)
         {
-            if (!_cache.TryGetValue(_getSessionsKey, out ICollection<SessionResponse> sessions))
+            if (!_cache.TryGetValue($"{_getSessionsKey}{conferenceId?.ToString() ?? ""}", out ICollection<SessionResponse> sessions))
             {
-                var response = await _httpClient.GetAsync(_sessionsUri);
+                var uri = conferenceId != null ? $"{_sessionsUri}/conference/{conferenceId}" : _sessionsUri;
+
+                var response = await _httpClient.GetAsync(uri);
 
                 response.EnsureSuccessStatusCode();
 
@@ -116,12 +120,12 @@ namespace FrontEnd.Services
             return sessions;
         }
 
-        public async Task<ICollection<SessionResponse>> GetSessionsByAttendeeAsync(string name)
+        public async Task<ICollection<SessionResponse>> GetSessionsByAttendeeAsync(string name, int? conferenceId = null)
         {
             if (!_cache.TryGetValue($"{_getSessionsKey}/{name}", out ICollection<SessionResponse> sessions))
             {
                 var attendeeTask = GetAttendeeAsync(name);
-                var sessionsTask = GetSessionsAsync();
+                var sessionsTask = GetSessionsAsync(conferenceId);
 
                 await Task.WhenAll(attendeeTask, sessionsTask);
 
@@ -262,10 +266,42 @@ namespace FrontEnd.Services
 
                 tracks = await response.Content.ReadAsJsonAsync<ICollection<TrackResponse>>();
 
-                _cache.Set(_getImages, tracks, GetCacheEntryOptions());
+                _cache.Set(_getTracks, tracks, GetCacheEntryOptions());
             }
 
             return tracks;
+        }
+
+        public async Task<IEnumerable<ConferenceResponse>> GetConferencesForFollowingFiveDays()
+        {
+            if (!_cache.TryGetValue(_getConferences, out IEnumerable<ConferenceResponse> conferences))
+            {
+                var response = await _httpClient.GetAsync($"{_conferencesUri}");
+
+                response.EnsureSuccessStatusCode();
+
+                conferences = await response.Content.ReadAsJsonAsync<IEnumerable<ConferenceResponse>>();
+
+                _cache.Set(_getConferences, conferences, GetCacheEntryOptions());
+            }
+
+            return conferences;
+        }
+
+        public async Task<ConferenceResponse> GetConference(int conferenceId)
+        {
+            if (!_cache.TryGetValue($"{_getConferences}/{conferenceId}", out ConferenceResponse conference))
+            {
+                var response = await _httpClient.GetAsync($"{_conferencesUri}/{conferenceId}");
+
+                response.EnsureSuccessStatusCode();
+
+                conference = await response.Content.ReadAsJsonAsync<ConferenceResponse>();
+
+                _cache.Set(_getConferences, conference, GetCacheEntryOptions());
+            }
+
+            return conference;
         }
 
         private static MemoryCacheEntryOptions GetCacheEntryOptions()

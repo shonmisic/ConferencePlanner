@@ -21,15 +21,14 @@ namespace ConferencePlanner.Tests.UnitTests.FrontEndTests
         [Fact]
         public async Task OnGetAsyncSuccessfull()
         {
-            var sessionId = 2;
             var testSession = GetTestSessionResponse();
             var apiClientStub = new Mock<IApiClient>();
 
             apiClientStub.Setup(a => a.GetSessionAsync(It.IsAny<int>()))
                 .ReturnsAsync(testSession);
-            apiClientStub.Setup(a => a.GetSessionsAsync())
+            apiClientStub.Setup(a => a.GetSessionsAsync(It.IsAny<int>()))
                 .ReturnsAsync(GetTestAllSessionsAsync());
-            apiClientStub.Setup(a => a.GetSessionsByAttendeeAsync(It.IsAny<string>()))
+            apiClientStub.Setup(a => a.GetSessionsByAttendeeAsync(It.IsAny<string>(), It.IsAny<int>()))
                 .ReturnsAsync(GetTestAllSessionsAsync());
 
             var displayName = "User name";
@@ -55,7 +54,7 @@ namespace ConferencePlanner.Tests.UnitTests.FrontEndTests
             {
                 PageContext = pageContext
             };
-            await model.OnGetAsync(sessionId);
+            await model.OnGetAsync(testSession.ID, testSession.ConferenceId);
 
             Assert.Equal(testSession.ID, model.Session.ID);
             Assert.Equal(testSession.Title, model.Session.Title);

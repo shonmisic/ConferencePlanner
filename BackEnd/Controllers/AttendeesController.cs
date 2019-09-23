@@ -90,7 +90,7 @@ namespace BackEnd
                 return NotFound();
             }
 
-            var session = await _sessionsRepository.GetAsync(sessionId);
+            var session = await _sessionsRepository.GetByIdAsync(sessionId);
 
             if (session == null)
             {
@@ -118,7 +118,7 @@ namespace BackEnd
                 return NotFound();
             }
 
-            var session = await _sessionsRepository.GetAsync(sessionId);
+            var session = await _sessionsRepository.GetByIdAsync(sessionId);
 
             if (session == null)
             {

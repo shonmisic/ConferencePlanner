@@ -18,7 +18,7 @@ namespace ConferencePlanner.Tests.UnitTests.BackEndTests
         public async Task GetSessionsSuccessful()
         {
             var sessionsRepositoryStub = new Mock<ISessionsRepository>();
-            sessionsRepositoryStub.Setup(s => s.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(GetAllSessions());
+            sessionsRepositoryStub.Setup(s => s.GetAll()).Returns(GetAllSessions());
 
             var cacheStub = new Mock<IDistributedCache>();
             cacheStub.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync((byte[]) null);
@@ -49,7 +49,7 @@ namespace ConferencePlanner.Tests.UnitTests.BackEndTests
             };
 
             var sessionsRepositoryStub = new Mock<ISessionsRepository>();
-            sessionsRepositoryStub.Setup(s => s.GetAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
+            sessionsRepositoryStub.Setup(s => s.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
 
             var cacheStub = new Mock<IDistributedCache>();
             cacheStub.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync((byte[]) null);

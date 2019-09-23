@@ -38,8 +38,41 @@ namespace BackEnd.Controllers
             
             if (result == null)
             {
-                result = (await _sessionsRepository.GetAllAsync())
-                            .Where(s => IsWithinDateRange(fromDate, toDate, s))
+                result = new List<SessionResponse>();
+                var list = _sessionsRepository.GetAll();
+                foreach (var item in list)
+                {
+                    if (IsWithinDateRange(fromDate, toDate, item))
+                    {
+                        result.Add(item.MapSessionResponse());
+                    }
+                }
+                //result = _sessionsRepository.GetAll()
+                //                            .Where(s => s.StartTime?.CompareTo(fromDate.Value) >= 0 && s.EndTime?.CompareTo(toDate.Value) <= 0)
+                //                            .Select(m => m.MapSessionResponse())
+                //                            .ToList();
+
+                await CacheValue(_getSessions, result);
+            }
+
+            return result;
+        }
+
+        [HttpGet("conference/{conferenceId:int}")]
+        public async Task<ActionResult<ICollection<SessionResponse>>> Get(int conferenceId, DateTimeOffset? fromDate = null, 
+            DateTimeOffset? toDate = null)
+        {
+            fromDate = fromDate ?? DateTimeOffset.MinValue;
+            toDate = toDate ?? DateTimeOffset.MaxValue;
+
+            var cachedValue = await _cache.GetAsync(string.Format("{0}, conferenceId:{1}, from:{2}, to:{3}", _getSessions, conferenceId, fromDate, toDate));
+
+            var result = cachedValue.FromByteArray<List<SessionResponse>>();
+            
+            if (result == null)
+            {
+                result = (await _sessionsRepository.GetByConferenceIdAsync(conferenceId))
+                            .Where(s => s.StartTime?.CompareTo(fromDate.Value) >= 0 && s.EndTime?.CompareTo(toDate.Value) <= 0)
                             .Select(m => m.MapSessionResponse())
                             .ToList();
 
@@ -49,16 +82,25 @@ namespace BackEnd.Controllers
             return result;
         }
 
+        private static bool IsWithinDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate, Data.Session s)
+        {
+            var startTime = s.StartTime ?? DateTimeOffset.MinValue;
+            var endTime = s.EndTime ?? DateTimeOffset.MaxValue;
+
+            return startTime.CompareTo(fromDate.Value) >= 0 
+                && endTime.CompareTo(toDate.Value) <= 0;
+        }
+
         [HttpGet("{id:int}")]
         public async Task<ActionResult<SessionResponse>> Get(int id)
         {
-            var cacheKey = $"{_getSessions}/{id}";
+            var cacheKey = $"{_getSessions}{id}";
             var cachedValue = await _cache.GetAsync(cacheKey);
 
             var result = cachedValue.FromByteArray<SessionResponse>();
             if (result == null)
             {
-                var session = await _sessionsRepository.GetAsync(id);
+                var session = await _sessionsRepository.GetByIdAsync(id);
 
                 if (session == null)
                 {
@@ -94,7 +136,7 @@ namespace BackEnd.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, Session input)
         {
-            var session = await _sessionsRepository.GetAsync(id);
+            var session = await _sessionsRepository.GetByIdAsync(id);
 
             if (session == null)
             {
@@ -109,7 +151,7 @@ namespace BackEnd.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<SessionResponse>> Delete(int id)
         {
-            var session = await _sessionsRepository.GetAsync(id);
+            var session = await _sessionsRepository.GetByIdAsync(id);
 
             if (session == null)
             {
@@ -127,15 +169,6 @@ namespace BackEnd.Controllers
             var options = new DistributedCacheEntryOptions()
                .SetSlidingExpiration(TimeSpan.FromMinutes(1));
             await _cache.SetAsync(key, valueToCache, options);
-        }
-
-        private static bool IsWithinDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate, Data.Session s)
-        {
-            var startTime = s.StartTime ?? DateTimeOffset.MinValue;
-            var endTime = s.EndTime ?? DateTimeOffset.MaxValue;
-
-            return startTime.CompareTo(fromDate.Value) >= 0 
-                && endTime.CompareTo(toDate.Value) <= 0;
         }
     }
 }
