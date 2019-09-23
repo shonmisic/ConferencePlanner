@@ -53,7 +53,7 @@ namespace BackEnd.Infrastructure
                         {
                             ID = ss.SessionId,
                             Title = ss.Session.Title,
-                            Url = $"{_baseUrlFrontEnd}/Sessions/{ss.SessionId}"
+                            Url = CreateSessionUrl(ss.SessionId)
                         })
                     .ToList()
             };
@@ -73,7 +73,7 @@ namespace BackEnd.Infrastructure
                             Title = sa.Session.Title,
                             StartTime = sa.Session.StartTime,
                             EndTime = sa.Session.EndTime,
-                            Url = $"{_baseUrlFrontEnd}/Sessions/{sa.SessionId}"
+                            Url = CreateSessionUrl(sa.SessionId)
                         })
                     .ToList(),
                 Conferences = attendee.ConferenceAttendees?
@@ -119,6 +119,28 @@ namespace BackEnd.Infrastructure
                 ImageType = image.ImageType
             };
 
+        public static ConferenceDTO.TrackResponse MapTrackResponse(this Track track) =>
+            new ConferenceDTO.TrackResponse
+            {
+                ID = track.ID,
+                Conference = track.Conference,
+                ConferenceId = track.ConferenceId,
+                Name = track.Name,
+                Sessions = track.Sessions?
+                    .Select(s => new ConferenceDTO.Session
+                    {
+                        ID = s.ID,
+                        ConferenceId = s.ConferenceId,
+                        Abstract = s.Abstract,
+                        EndTime = s.EndTime,
+                        StartTime = s.StartTime,
+                        Title = s.Title,
+                        TrackId = s.TrackId,
+                        Url = CreateSessionUrl(s.ID)
+                    })
+                    .ToList()
+            };
+
         public static byte[] ToByteArray<T>(this T obj)
         {
             if (obj == null)
@@ -147,6 +169,11 @@ namespace BackEnd.Infrastructure
             {
                 return (T) bf.Deserialize(ms);
             }
+        }
+
+        private static string CreateSessionUrl(int sessionId)
+        {
+            return $"{_baseUrlFrontEnd}/Sessions/{sessionId}";
         }
     }
 }

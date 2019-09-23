@@ -17,12 +17,14 @@ namespace FrontEnd.Services
         private static readonly string _speakersUri = "/api/speakers";
         private static readonly string _searchUri = "/api/search";
         private static readonly string _imagesUri = "/api/images";
+        private static readonly string _tracksUri = "/api/images";
 
         private readonly IMemoryCache _cache;
         private static readonly string _getSessionsKey = "_GetSessions";
         private static readonly string _getSpeakersKey = "_GetSpeakers";
         private static readonly string _getSearchResults = "_GetSearchResults";
         private static readonly string _getImages = "_GetImages";
+        private static readonly string _getTracks = "_GetTracks";
 
         private readonly HttpClient _httpClient;
 
@@ -108,11 +110,7 @@ namespace FrontEnd.Services
 
                 sessions = await response.Content.ReadAsAsync<ICollection<SessionResponse>>();
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSize(10240)
-                    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
-
-                _cache.Set(_getSessionsKey, sessions, cacheEntryOptions);
+                _cache.Set(_getSessionsKey, sessions, GetCacheEntryOptions());
             }
 
             return sessions;
@@ -139,11 +137,7 @@ namespace FrontEnd.Services
 
                 sessions = sessions.Where(s => sessionIds.Contains(s.ID)).ToList();
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                   .SetSize(10240)
-                   .SetSlidingExpiration(TimeSpan.FromMinutes(2));
-
-                _cache.Set(_getSessionsKey, sessions, cacheEntryOptions);
+                _cache.Set(_getSessionsKey, sessions, GetCacheEntryOptions());
             }
 
             return sessions;
@@ -164,11 +158,7 @@ namespace FrontEnd.Services
 
                 speaker = await response.Content.ReadAsAsync<SpeakerResponse>();
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                  .SetSize(1024)
-                  .SetSlidingExpiration(TimeSpan.FromMinutes(2));
-
-                _cache.Set(_getSpeakersKey, speaker, cacheEntryOptions);
+                _cache.Set(_getSpeakersKey, speaker, GetCacheEntryOptions());
             }
 
             return speaker;
@@ -184,11 +174,7 @@ namespace FrontEnd.Services
 
                 speakers = await response.Content.ReadAsAsync<ICollection<SpeakerResponse>>();
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                  .SetSize(10240)
-                  .SetSlidingExpiration(TimeSpan.FromMinutes(2));
-
-                _cache.Set(_getSpeakersKey, speakers, cacheEntryOptions);
+                _cache.Set(_getSpeakersKey, speakers, GetCacheEntryOptions());
             }
 
             return speakers;
@@ -223,11 +209,7 @@ namespace FrontEnd.Services
 
                 searchResults = await response.Content.ReadAsAsync<ICollection<SearchResult>>();
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                  .SetSize(10240)
-                  .SetSlidingExpiration(TimeSpan.FromMinutes(2));
-
-                _cache.Set(_getSearchResults, searchResults, cacheEntryOptions);
+                _cache.Set(_getSearchResults, searchResults, GetCacheEntryOptions());
             }
 
             return searchResults;
@@ -257,11 +239,7 @@ namespace FrontEnd.Services
 
                 images = await response.Content.ReadAsAsync<ICollection<ImageResponse>>();
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                  .SetSize(102400)
-                  .SetSlidingExpiration(TimeSpan.FromMinutes(2));
-
-                _cache.Set(_getImages, images, cacheEntryOptions);
+                _cache.Set(_getImages, images, GetCacheEntryOptions());
             }
 
             return images;
@@ -272,6 +250,29 @@ namespace FrontEnd.Services
             var response = await _httpClient.PostAsJsonAsync($"{_attendeesUri}/{username}/image", imageRequest);
 
             response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<ICollection<TrackResponse>> GetTracks(int conferenceId)
+        {
+            if (!_cache.TryGetValue(_getTracks, out ICollection<TrackResponse> tracks))
+            {
+                var response = await _httpClient.GetAsync($"{_tracksUri}/{conferenceId}");
+
+                response.EnsureSuccessStatusCode();
+
+                tracks = await response.Content.ReadAsAsync<ICollection<TrackResponse>>();
+
+                _cache.Set(_getImages, tracks, GetCacheEntryOptions());
+            }
+
+            return tracks;
+        }
+
+        private static MemoryCacheEntryOptions GetCacheEntryOptions()
+        {
+            return new MemoryCacheEntryOptions()
+              .SetSize(102400)
+              .SetSlidingExpiration(TimeSpan.FromMinutes(2));
         }
     }
 }

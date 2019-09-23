@@ -27,7 +27,10 @@ namespace BackEnd.Controllers
             var conferences = await _db.Conferences.AsNoTracking().Select(s => new ConferenceResponse
             {
                 ID = s.ID,
-                Name = s.Name
+                Name = s.Name,
+                StartTime = s.StartTime,
+                EndTime = s.EndTime,
+                Url = s.Url
             })
             .ToListAsync();
 
@@ -47,7 +50,10 @@ namespace BackEnd.Controllers
             var result = new ConferenceResponse
             {
                 ID = conference.ID,
-                Name = conference.Name
+                Name = conference.Name,
+                StartTime = conference.StartTime,
+                EndTime = conference.EndTime,
+                Url = conference.Url
             };
 
             return result;

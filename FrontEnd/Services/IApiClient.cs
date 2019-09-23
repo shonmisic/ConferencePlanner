@@ -21,5 +21,6 @@ namespace FrontEnd.Services
         Task<bool> CheckHealthAsync();
         Task<ICollection<ImageResponse>> GetImagesAsync();
         Task AddImageToAttendeeAsync(string username, ImageRequest imageRequest);
+        Task<ICollection<TrackResponse>> GetTracks(int conferenceId);
     }
 }
