@@ -83,7 +83,7 @@ namespace FrontEnd.Services
 
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsAsync<AttendeeResponse>();
+            return await response.Content.ReadAsJsonAsync<AttendeeResponse>();
         }
 
         public async Task<SessionResponse> GetSessionAsync(int id)
@@ -97,7 +97,7 @@ namespace FrontEnd.Services
 
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsAsync<SessionResponse>();
+            return await response.Content.ReadAsJsonAsync<SessionResponse>();
         }
 
         public async Task<ICollection<SessionResponse>> GetSessionsAsync()
@@ -108,7 +108,7 @@ namespace FrontEnd.Services
 
                 response.EnsureSuccessStatusCode();
 
-                sessions = await response.Content.ReadAsAsync<ICollection<SessionResponse>>();
+                sessions = await response.Content.ReadAsJsonAsync<ICollection<SessionResponse>>();
 
                 _cache.Set(_getSessionsKey, sessions, GetCacheEntryOptions());
             }
@@ -156,7 +156,7 @@ namespace FrontEnd.Services
 
                 response.EnsureSuccessStatusCode();
 
-                speaker = await response.Content.ReadAsAsync<SpeakerResponse>();
+                speaker = await response.Content.ReadAsJsonAsync<SpeakerResponse>();
 
                 _cache.Set(_getSpeakersKey, speaker, GetCacheEntryOptions());
             }
@@ -172,7 +172,7 @@ namespace FrontEnd.Services
 
                 response.EnsureSuccessStatusCode();
 
-                speakers = await response.Content.ReadAsAsync<ICollection<SpeakerResponse>>();
+                speakers = await response.Content.ReadAsJsonAsync<ICollection<SpeakerResponse>>();
 
                 _cache.Set(_getSpeakersKey, speakers, GetCacheEntryOptions());
             }
@@ -207,7 +207,7 @@ namespace FrontEnd.Services
 
                 response.EnsureSuccessStatusCode();
 
-                searchResults = await response.Content.ReadAsAsync<ICollection<SearchResult>>();
+                searchResults = await response.Content.ReadAsJsonAsync<ICollection<SearchResult>>();
 
                 _cache.Set(_getSearchResults, searchResults, GetCacheEntryOptions());
             }
@@ -237,7 +237,7 @@ namespace FrontEnd.Services
 
                 response.EnsureSuccessStatusCode();
 
-                images = await response.Content.ReadAsAsync<ICollection<ImageResponse>>();
+                images = await response.Content.ReadAsJsonAsync<ICollection<ImageResponse>>();
 
                 _cache.Set(_getImages, images, GetCacheEntryOptions());
             }
@@ -260,7 +260,7 @@ namespace FrontEnd.Services
 
                 response.EnsureSuccessStatusCode();
 
-                tracks = await response.Content.ReadAsAsync<ICollection<TrackResponse>>();
+                tracks = await response.Content.ReadAsJsonAsync<ICollection<TrackResponse>>();
 
                 _cache.Set(_getImages, tracks, GetCacheEntryOptions());
             }
