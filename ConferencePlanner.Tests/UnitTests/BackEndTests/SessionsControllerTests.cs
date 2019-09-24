@@ -93,7 +93,7 @@ namespace ConferencePlanner.Tests.UnitTests.BackEndTests
             };
         }
 
-        private ICollection<BackEnd.Data.Session> GetAllSessions()
+        private IQueryable<BackEnd.Data.Session> GetAllSessions()
         {
             return new List<BackEnd.Data.Session>
             {
@@ -109,7 +109,7 @@ namespace ConferencePlanner.Tests.UnitTests.BackEndTests
                     Abstract = "abstract2",
                     Title = "title2"
                 }
-            };
+            }.AsQueryable();
         }
     }
 }

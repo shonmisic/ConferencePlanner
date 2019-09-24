@@ -6,55 +6,6 @@ namespace ConferencePlanner.Tests
 {
     public class TestDataSeeder
     {
-        public static readonly Session Session1 = new Session
-        {
-            ID = 1,
-            Abstract = "abstract",
-            Title = "title",
-            StartTime = new DateTimeOffset(new DateTime(2019, 9, 20)),
-            EndTime = new DateTimeOffset(new DateTime(2019, 9, 21)),
-            Conference = conference1,
-            ConferenceId = conference1.ID,
-            SessionSpeakers = new List<SessionSpeaker>
-            {
-                new SessionSpeaker
-                {
-                    SessionId = Session1.ID,
-                    SpeakerId = 1,
-                    Speaker = new Speaker
-                    {
-                        ID = 1,
-                        Name = "speaker1"
-                    }
-                }
-            },
-            SessionTags = new List<SessionTag>
-            {
-                new SessionTag
-                {
-                    SessionId = Session1.ID,
-                    Tag = new Tag
-                    {
-                        ID = 1,
-                        Name = "tag1"
-                    },
-                    TagId = 1
-                }
-            },
-            TrackId = track1.ID,
-            Track = track1
-        };
-
-        public static readonly Conference conference1 = new Conference
-        {
-            ID = 1
-        };
-
-        public static readonly Track track1 = new Track
-        {
-            ID = 1
-        };
-
         private readonly ApplicationDbContext _context;
 
         public TestDataSeeder(ApplicationDbContext context)
@@ -67,7 +18,54 @@ namespace ConferencePlanner.Tests
 
         public void SeedToDoItems()
         {
-            _context.Sessions.Add(Session1);
+            _context.Conferences.Add(new Conference
+            {
+                ID = 1
+            });
+            _context.Tags.Add(new Tag
+            {
+                ID = 1,
+                Name = "tag1"
+            });
+            _context.Speakers.Add(new Speaker
+            {
+                ID = 1,
+                Name = "speaker1"
+            });
+            //_context.SessionTags.Add(sessionTag1);
+            //_context.SessionSpeakers.Add(sessionSpeaker1);
+            _context.Tracks.Add(new Track
+            {
+                ID = 1,
+                Name = "track1"
+            });
+            _context.Sessions.Add(new Session
+            {
+                ID = 1,
+                Abstract = "abstract",
+                Title = "title",
+                StartTime = new DateTimeOffset(new DateTime(2019, 9, 20)),
+                EndTime = new DateTimeOffset(new DateTime(2019, 9, 21)),
+                ConferenceId = 1,
+                SessionSpeakers = new List<SessionSpeaker>
+                {
+                    new SessionSpeaker
+                    {
+                        SessionId = 1,
+                        SpeakerId = 1,
+                    }
+                },
+                SessionTags = new List<SessionTag>
+            {
+                new SessionTag
+                {
+                    SessionId = 1,
+                    TagId = 1
+                }
+            },
+                TrackId = 1,
+            });
+
             _context.SaveChanges();
         }
     }

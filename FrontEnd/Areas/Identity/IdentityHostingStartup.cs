@@ -16,10 +16,10 @@ namespace FrontEnd.Areas.Identity
         {
             builder.ConfigureServices((context, services) => {
                 services.AddDbContext<IdentityDbContext>(options =>
-                    //options.UseSqlServer(
-                    //    context.Configuration.GetConnectionString("IdentityDbContextConnection")));
-                    options.UseNpgsql(
-                        context.Configuration.GetConnectionString("PostgreSQLConnection")));
+                    options.UseSqlServer(
+                        context.Configuration.GetConnectionString("IdentityDbContextConnection")));
+                //options.UseNpgsql(
+                //    context.Configuration.GetConnectionString("PostgreSQLConnection")));
 
                 services.AddDefaultIdentity<User>(options =>
                     {
