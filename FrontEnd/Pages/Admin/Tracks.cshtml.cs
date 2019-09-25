@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using ConferenceDTO;
+﻿using ConferenceDTO;
 using FrontEnd.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace FrontEnd.Pages.Admin
 {
@@ -19,9 +17,12 @@ namespace FrontEnd.Pages.Admin
         }
 
         public ICollection<TrackResponse> Tracks { get; set; }
+        public ConferenceResponse Conference { get; set; }
 
         public async Task<IActionResult> OnGet(int conferenceId)
         {
+            Conference = await _apiClient.GetConference(conferenceId);
+
             Tracks = await _apiClient.GetTracks(conferenceId);
 
             if (Tracks == null)
@@ -30,6 +31,13 @@ namespace FrontEnd.Pages.Admin
             }
 
             return Page();
+        }
+
+        public async Task<IActionResult> OnPostRemoveAsync(int id)
+        {
+            await _apiClient.DeleteTrackAsync(id);
+
+            return RedirectToPage();
         }
     }
 }

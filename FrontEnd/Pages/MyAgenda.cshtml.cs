@@ -23,26 +23,31 @@ namespace FrontEnd.Pages
             _logger = logger;
         }
 
-        public IEnumerable<IGrouping<DateTimeOffset?, SessionResponse>> Sessions { get; set; }
+        public IEnumerable<ConferenceResponse> Conferences { get; set; }
+        public ConferenceResponse SelectedConference { get; set; }
+        public IEnumerable<IGrouping<DateTimeOffset?, SessionResponse>> UserSessions { get; set; }
         public IEnumerable<(int Offset, DayOfWeek? DayOfWeek)> DayOffsets { get; set; }
         public int CurrentDayOffset { get; set; }
-        public List<int> UserSessions { get; set; }
 
         [TempData]
         public string Message { get; set; }
         public bool ShowMessage => !string.IsNullOrEmpty(Message);
 
-        public async Task OnGet(int day = 0)
+        public async Task OnGet(int day = 0, int id = 0)
         {
-            CurrentDayOffset = day;
+            CurrentDayOffset = day; Conferences = await _apiClient.GetConferencesForFollowingFiveDays();
 
-            var userSessions = await _apiClient.GetSessionsByAttendeeAsync(User.Identity.Name);
-            UserSessions = userSessions.Select(s => s.ID).ToList();
+            SelectedConference = Conferences.SingleOrDefault(c => c.ID == id);
 
-            var sessions = await _apiClient.GetSessionsAsync();
+            if (SelectedConference == null)
+            {
+                return;
+            }
 
-            var startDate = sessions.Min(s => s.StartTime?.Date);
-            var endDate = sessions.Max(s => s.EndTime?.Date);
+            var userSessions = await _apiClient.GetSessionsByAttendeeAsync(User.Identity.Name, id);
+
+            var startDate = userSessions.Min(s => s.StartTime?.Date);
+            var endDate = userSessions.Max(s => s.EndTime?.Date);
 
             var numberOfDays = (endDate - startDate)?.Days + 1;
 
@@ -51,10 +56,24 @@ namespace FrontEnd.Pages
 
             var filterDate = startDate?.AddDays(day);
 
-            Sessions = sessions.Where(s => s.StartTime?.Date == filterDate)
+            UserSessions = userSessions.Where(s => s.StartTime?.Date == filterDate)
                 .OrderBy(s => s.TrackId)
                 .GroupBy(s => s.StartTime)
                 .OrderBy(s => s.Key);
-        } 
+        }
+
+        public async Task<IActionResult> OnPostAsync(int sessionId)
+        {
+            await _apiClient.AddSessionToAttendeeAsync(User.Identity.Name, sessionId);
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostRemoveAsync(int sessionId)
+        {
+            await _apiClient.RemoveSessionFromAttendeeAsync(User.Identity.Name, sessionId);
+
+            return RedirectToPage();
+        }
     }
 }

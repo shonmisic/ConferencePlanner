@@ -28,7 +28,17 @@ namespace ConferencePlanner.Tests.Mocks
             throw new NotImplementedException();
         }
 
+        public Task CreateTrackAsync(TrackRequest trackRequest)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task DeleteSessionAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteTrackAsync(int id)
         {
             throw new NotImplementedException();
         }
@@ -79,7 +89,7 @@ namespace ConferencePlanner.Tests.Mocks
             });
         }
 
-        public async Task<ICollection<SessionResponse>> GetSessionsAsync(int? conferenceId = null)
+        public async Task<ICollection<SessionResponse>> GetSessionsAsync(int conferenceId)
         {
             return await Task.FromResult(new List<SessionResponse>
                 {
@@ -117,7 +127,7 @@ namespace ConferencePlanner.Tests.Mocks
             );
         }
 
-        public Task<ICollection<SessionResponse>> GetSessionsByAttendeeAsync(string name, int? conferenceId = null)
+        public Task<ICollection<SessionResponse>> GetSessionsByAttendeeAsync(string name, int conferenceId)
         {
             return Task.FromResult<ICollection<SessionResponse>>(new List<SessionResponse>
                 {

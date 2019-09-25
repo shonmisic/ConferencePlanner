@@ -28,7 +28,6 @@ namespace FrontEnd.Pages
         public IEnumerable<(int Offset, DayOfWeek? DayOfWeek)> DayOffsets { get; set; }
         public int CurrentDayOffset { get; set; }
         public bool IsAdmin { get; set; }
-        public List<int> UserSessions { get; set; }
 
         [TempData]
         public string Message { get; set; }
@@ -50,9 +49,6 @@ namespace FrontEnd.Pages
             {
                 return;
             }
-
-            var userSessions = await _apiClient.GetSessionsByAttendeeAsync(User.Identity.Name, SelectedConference.ID);
-            UserSessions = userSessions.Select(s => s.ID).ToList();
 
             var sessions = await GetSessionsAsync(SelectedConference.ID);
 

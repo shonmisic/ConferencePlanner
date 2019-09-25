@@ -141,6 +141,25 @@ namespace BackEnd.Infrastructure
                     .ToList()
             };
 
+        public static Track MapTrack(this ConferenceDTO.TrackRequest trackRequest) =>
+            new Track
+            {
+                ID = trackRequest.ID,
+                ConferenceId = trackRequest.ConferenceId,
+                Name = trackRequest.Name,
+            };
+
+        public static Session MapSession(this ConferenceDTO.Session session) =>
+            new Session
+            {
+                Title = session.Title,
+                ConferenceId = session.ConferenceId,
+                StartTime = session.StartTime,
+                EndTime = session.EndTime,
+                Abstract = session.Abstract,
+                TrackId = session.TrackId
+            };
+
         public static byte[] ToByteArray<T>(this T obj)
         {
             if (obj == null)

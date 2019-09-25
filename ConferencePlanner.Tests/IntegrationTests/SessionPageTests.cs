@@ -24,7 +24,7 @@ namespace ConferencePlanner.Tests.IntegrationTests
         [Fact]
         public async Task OnGetAsyncSuccessful()
         {
-            var defaultPage = await _httpClient.GetAsync("/Session/1");
+            var defaultPage = await _httpClient.GetAsync("/Session/1, 1");
 
             defaultPage.EnsureSuccessStatusCode();
 

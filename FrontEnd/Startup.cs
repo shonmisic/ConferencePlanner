@@ -45,17 +45,17 @@ namespace FrontEnd
                             new SlugifyParameterTransformer()));
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-            
+
             services.AddHttpClient<IApiClient, ApiClient>(client =>
             {
                 client.BaseAddress = new Uri(Configuration["ServiceUrl"]);
-            })
-            .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
-            {
-                TimeSpan.FromSeconds(1),
-                TimeSpan.FromSeconds(5),
-                TimeSpan.FromSeconds(10),
-            }));
+            });
+            //.AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
+            //{
+            //    TimeSpan.FromSeconds(1),
+            //    TimeSpan.FromSeconds(5),
+            //    TimeSpan.FromSeconds(10),
+            //}));
 
             services.AddSingleton<IAdminService, AdminService>();
 

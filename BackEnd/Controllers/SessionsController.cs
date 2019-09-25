@@ -26,7 +26,7 @@ namespace BackEnd.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ICollection<SessionResponse>>> Get(DateTimeOffset? fromDate = null, 
+        public async Task<ActionResult<ICollection<SessionResponse>>> Get(DateTimeOffset? fromDate = null,
             DateTimeOffset? toDate = null)
         {
             fromDate = fromDate ?? DateTimeOffset.MinValue;
@@ -35,22 +35,13 @@ namespace BackEnd.Controllers
             var cachedValue = await _cache.GetAsync(string.Format("{0}, from:{1}, to:{2}", _getSessions, fromDate, toDate));
 
             var result = cachedValue.FromByteArray<List<SessionResponse>>();
-            
+
             if (result == null)
             {
-                result = new List<SessionResponse>();
-                var list = _sessionsRepository.GetAll();
-                foreach (var item in list)
-                {
-                    if (IsWithinDateRange(fromDate, toDate, item))
-                    {
-                        result.Add(item.MapSessionResponse());
-                    }
-                }
-                //result = _sessionsRepository.GetAll()
-                //                            .Where(s => s.StartTime?.CompareTo(fromDate.Value) >= 0 && s.EndTime?.CompareTo(toDate.Value) <= 0)
-                //                            .Select(m => m.MapSessionResponse())
-                //                            .ToList();
+                result = _sessionsRepository.GetAll()
+                                            .Where(s => IsSessionWithinDateRange(fromDate, toDate, s))
+                                            .Select(m => m.MapSessionResponse())
+                                            .ToList();
 
                 await CacheValue(_getSessions, result);
             }
@@ -59,36 +50,18 @@ namespace BackEnd.Controllers
         }
 
         [HttpGet("conference/{conferenceId:int}")]
-        public async Task<ActionResult<ICollection<SessionResponse>>> Get(int conferenceId, DateTimeOffset? fromDate = null, 
+        public async Task<ActionResult<ICollection<SessionResponse>>> Get(int conferenceId, DateTimeOffset? fromDate = null,
             DateTimeOffset? toDate = null)
         {
             fromDate = fromDate ?? DateTimeOffset.MinValue;
             toDate = toDate ?? DateTimeOffset.MaxValue;
 
-            var cachedValue = await _cache.GetAsync(string.Format("{0}, conferenceId:{1}, from:{2}, to:{3}", _getSessions, conferenceId, fromDate, toDate));
-
-            var result = cachedValue.FromByteArray<List<SessionResponse>>();
-            
-            if (result == null)
-            {
-                result = (await _sessionsRepository.GetByConferenceIdAsync(conferenceId))
-                            .Where(s => s.StartTime?.CompareTo(fromDate.Value) >= 0 && s.EndTime?.CompareTo(toDate.Value) <= 0)
+            var result = (await _sessionsRepository.GetByConferenceIdAsync(conferenceId))
+                            .Where(s => IsSessionWithinDateRange(fromDate, toDate, s))
                             .Select(m => m.MapSessionResponse())
                             .ToList();
 
-                await CacheValue(_getSessions, result);
-            }
-
             return result;
-        }
-
-        private static bool IsWithinDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate, Data.Session s)
-        {
-            var startTime = s.StartTime ?? DateTimeOffset.MinValue;
-            var endTime = s.EndTime ?? DateTimeOffset.MaxValue;
-
-            return startTime.CompareTo(fromDate.Value) >= 0 
-                && endTime.CompareTo(toDate.Value) <= 0;
         }
 
         [HttpGet("{id:int}")]
@@ -118,15 +91,7 @@ namespace BackEnd.Controllers
         [HttpPost]
         public async Task<ActionResult<SessionResponse>> Post(Session input)
         {
-            var session = await _sessionsRepository.AddAsync(new Data.Session
-            {
-                Title = input.Title,
-                ConferenceId = input.ConferenceId,
-                StartTime = input.StartTime,
-                EndTime = input.EndTime,
-                Abstract = input.Abstract,
-                TrackId = input.TrackId
-            });
+            var session = await _sessionsRepository.AddAsync(input.MapSession());
 
             var result = session.MapSessionResponse();
 
@@ -167,8 +132,17 @@ namespace BackEnd.Controllers
         {
             var valueToCache = result.ToByteArray();
             var options = new DistributedCacheEntryOptions()
-               .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+               .SetSlidingExpiration(TimeSpan.FromSeconds(3));
             await _cache.SetAsync(key, valueToCache, options);
+        }
+
+        private static bool IsSessionWithinDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate, Data.Session s)
+        {
+            var startTime = s.StartTime ?? DateTimeOffset.MinValue;
+            var endTime = s.EndTime ?? DateTimeOffset.MaxValue;
+
+            return startTime.CompareTo(fromDate.Value) >= 0
+                && endTime.CompareTo(toDate.Value) <= 0;
         }
     }
 }

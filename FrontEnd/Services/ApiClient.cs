@@ -20,7 +20,6 @@ namespace FrontEnd.Services
         private static readonly string _tracksUri = "/api/tracks";
         private static readonly string _conferencesUri = "/api/conferences";
 
-        private static readonly string _getSessionsKey = "_GetSessions";
         private static readonly string _getSpeakersKey = "_GetSpeakers";
         private static readonly string _getSearchResults = "_GetSearchResults";
         private static readonly string _getImages = "_GetImages";
@@ -102,47 +101,33 @@ namespace FrontEnd.Services
             return await response.Content.ReadAsJsonAsync<SessionResponse>();
         }
 
-        public async Task<ICollection<SessionResponse>> GetSessionsAsync(int? conferenceId = null)
+        public async Task<ICollection<SessionResponse>> GetSessionsAsync(int conferenceId)
         {
-            if (!_cache.TryGetValue($"{_getSessionsKey}{conferenceId?.ToString() ?? ""}", out ICollection<SessionResponse> sessions))
-            {
-                var uri = conferenceId != null ? $"{_sessionsUri}/conference/{conferenceId}" : _sessionsUri;
+            var response = await _httpClient.GetAsync($"{_sessionsUri}/conference/{conferenceId}");
 
-                var response = await _httpClient.GetAsync(uri);
+            response.EnsureSuccessStatusCode();
 
-                response.EnsureSuccessStatusCode();
-
-                sessions = await response.Content.ReadAsJsonAsync<ICollection<SessionResponse>>();
-
-                _cache.Set(_getSessionsKey, sessions, GetCacheEntryOptions());
-            }
-
-            return sessions;
+            return await response.Content.ReadAsJsonAsync<ICollection<SessionResponse>>();
         }
 
-        public async Task<ICollection<SessionResponse>> GetSessionsByAttendeeAsync(string name, int? conferenceId = null)
+        public async Task<ICollection<SessionResponse>> GetSessionsByAttendeeAsync(string name, int conferenceId)
         {
-            if (!_cache.TryGetValue($"{_getSessionsKey}/{name}", out ICollection<SessionResponse> sessions))
+            var attendeeTask = GetAttendeeAsync(name);
+            var sessionsTask = GetSessionsAsync(conferenceId);
+
+            await Task.WhenAll(attendeeTask, sessionsTask);
+
+            var attendee = await attendeeTask;
+            var sessions = await sessionsTask;
+
+            if (attendee == null)
             {
-                var attendeeTask = GetAttendeeAsync(name);
-                var sessionsTask = GetSessionsAsync(conferenceId);
-
-                await Task.WhenAll(attendeeTask, sessionsTask);
-
-                var attendee = await attendeeTask;
-                sessions = await sessionsTask;
-
-                if (attendee == null)
-                {
-                    return new List<SessionResponse>();
-                }
-
-                var sessionIds = attendee.Sessions.Select(s => s.ID);
-
-                sessions = sessions.Where(s => sessionIds.Contains(s.ID)).ToList();
-
-                _cache.Set(_getSessionsKey, sessions, GetCacheEntryOptions());
+                return new List<SessionResponse>();
             }
+
+            var sessionIds = attendee.Sessions.Select(s => s.ID);
+
+            sessions = sessions.Where(s => sessionIds.Contains(s.ID)).ToList();
 
             return sessions;
         }
@@ -258,18 +243,11 @@ namespace FrontEnd.Services
 
         public async Task<ICollection<TrackResponse>> GetTracks(int conferenceId)
         {
-            if (!_cache.TryGetValue(_getTracks, out ICollection<TrackResponse> tracks))
-            {
-                var response = await _httpClient.GetAsync($"{_tracksUri}/{conferenceId}");
+            var response = await _httpClient.GetAsync($"{_tracksUri}/{conferenceId}");
 
-                response.EnsureSuccessStatusCode();
+            response.EnsureSuccessStatusCode();
 
-                tracks = await response.Content.ReadAsJsonAsync<ICollection<TrackResponse>>();
-
-                _cache.Set(_getTracks, tracks, GetCacheEntryOptions());
-            }
-
-            return tracks;
+            return await response.Content.ReadAsJsonAsync<ICollection<TrackResponse>>();
         }
 
         public async Task<IEnumerable<ConferenceResponse>> GetConferencesForFollowingFiveDays()
@@ -303,6 +281,19 @@ namespace FrontEnd.Services
 
             return conference;
         }
+        public async Task DeleteTrackAsync(int id)
+        {
+            var response = await _httpClient.DeleteAsync($"{_tracksUri}/{id}");
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task CreateTrackAsync(TrackRequest trackRequest)
+        {
+            var response = await _httpClient.PostAsJsonAsync(_tracksUri, trackRequest);
+
+            response.EnsureSuccessStatusCode();
+        }
 
         private static MemoryCacheEntryOptions GetCacheEntryOptions()
         {
@@ -311,4 +302,5 @@ namespace FrontEnd.Services
               .SetSlidingExpiration(TimeSpan.FromMinutes(2));
         }
     }
+
 }

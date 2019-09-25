@@ -1,13 +1,12 @@
-﻿using System;
+﻿using BackEnd.Infrastructure;
+using BackEnd.Repositories;
+using ConferenceDTO;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BackEnd.Infrastructure;
-using BackEnd.Repositories;
-using ConferenceDTO;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace BackEnd.Controllers
 {
@@ -29,25 +28,41 @@ namespace BackEnd.Controllers
         [HttpGet("{conferenceId:int}")]
         public async Task<ActionResult<ICollection<TrackResponse>>> Get(int conferenceId)
         {
-            var cacheKey = $"{_getConferences}/{conferenceId}";
-            var cachedValue = await _cache.GetAsync(cacheKey);
+            var result = (await _tracksRepository.GetAllByConferenceIdAsync(conferenceId))
+                                                 .Select(t => t.MapTrackResponse())
+                                                 .ToList();
 
-            var result = cachedValue.FromByteArray<List<TrackResponse>>();
             if (result == null)
             {
-                result = (await _tracksRepository.GetByConferenceIdAsync(conferenceId))
-                                                    .Select(t => t.MapTrackResponse())
-                                                    .ToList();
-
-                if (result == null)
-                {
-                    return NotFound();
-                }
-
-                await CacheValue(cacheKey, result);
+                return NotFound();
             }
 
             return result;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<TrackResponse>> Post(TrackRequest input)
+        {
+            var track = await _tracksRepository.AddAsync(input.MapTrack());
+
+            var result = track.MapTrackResponse();
+
+            return CreatedAtAction(nameof(Get), new { conferenceId = result.ConferenceId }, result);
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult<TrackResponse>> Delete(int id)
+        {
+            var track = await _tracksRepository.GetByIdAsync(id);
+
+            if (track == null)
+            {
+                return NotFound();
+            }
+
+            await _tracksRepository.DeleteAsync(id);
+
+            return track.MapTrackResponse();
         }
 
         private async Task CacheValue<T>(string key, T result)

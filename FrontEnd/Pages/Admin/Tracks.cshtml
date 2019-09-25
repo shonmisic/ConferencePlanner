@@ -1,8 +1,31 @@
-﻿@page
+﻿@page "{conferenceId}"
 @model FrontEnd.Pages.Admin.TracksModel
 @{
     ViewData["Title"] = "Tracks";
 }
 
-<h1>Tracks</h1>
+<h1>Tracks for conference @Model.Conference.Name</h1>
+
+<form authz="true" method="post">
+    <p class="mb-0">
+        <a asp-page="/Admin/AddTrack" asp-route-conferenceId="@Model.Conference.ID">Add new Track</a>
+    </p>
+
+    <div class="row">
+        @foreach (var track in Model.Tracks)
+        {
+            <div class="col-md-3 mb-4">
+                <div class="card shadow track h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@track.Name</h5>
+                    </div>
+                    <div class="card-footer">
+                        <input type="hidden" name="id" value="@track.ID" />
+                        <button type="submit" asp-page-handler="Remove" class="btn btn-danger btn-sm">Delete</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</form>
 

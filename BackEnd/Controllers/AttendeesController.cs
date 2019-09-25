@@ -29,25 +29,14 @@ namespace BackEnd
         [HttpGet("{username}")]
         public async Task<ActionResult<AttendeeResponse>> Get(string username)
         {
-            var cacheKey = $"{_getAttendee}/{username}";
-            var cachedValue = await _cache.GetAsync(cacheKey);
+            var attendee = await _attendeesRepository.GetByUsernameAsync(username);
 
-            var result = cachedValue.FromByteArray<AttendeeResponse>();
-            if (result == null)
+            if (attendee == null)
             {
-                var attendee = await _attendeesRepository.GetByUsernameAsync(username);
-
-                if (attendee == null)
-                {
-                    return NotFound();
-                }
-
-                result = attendee.MapAttendeeResponse();
-
-                await CacheValue(cacheKey, result);
+                return NotFound();
             }
 
-            return result;
+            return attendee.MapAttendeeResponse();
         }
 
         [HttpPost]
@@ -125,7 +114,15 @@ namespace BackEnd
                 return BadRequest();
             }
 
-            await _attendeesRepository.RemoveSessionAsync(username, sessionId);
+            try
+            {
+                await _attendeesRepository.RemoveSessionAsync(username, sessionId);
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
 
             return NoContent();
         }
