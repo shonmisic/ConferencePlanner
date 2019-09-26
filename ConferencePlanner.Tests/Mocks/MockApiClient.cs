@@ -8,7 +8,7 @@ namespace ConferencePlanner.Tests.Mocks
 {
     public class MockApiClient : IApiClient
     {
-        public Task<bool> AddAttendeeAsync(Attendee attendee)
+        public Task<bool> CreateAttendeeAsync(Attendee attendee)
         {
             throw new NotImplementedException();
         }
@@ -191,6 +191,11 @@ namespace ConferencePlanner.Tests.Mocks
         }
 
         public Task<ICollection<SearchResult>> SearchAsync(string query)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteSpeakerAsync(int id)
         {
             throw new NotImplementedException();
         }

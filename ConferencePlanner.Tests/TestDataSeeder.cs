@@ -32,8 +32,6 @@ namespace ConferencePlanner.Tests
                 ID = 1,
                 Name = "speaker1"
             });
-            //_context.SessionTags.Add(sessionTag1);
-            //_context.SessionSpeakers.Add(sessionSpeaker1);
             _context.Tracks.Add(new Track
             {
                 ID = 1,

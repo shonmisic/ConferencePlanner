@@ -37,7 +37,7 @@ namespace FrontEnd.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var success = await _apiClient.AddAttendeeAsync(Attendee);
+            var success = await _apiClient.CreateAttendeeAsync(Attendee);
 
             if (!success)
             {

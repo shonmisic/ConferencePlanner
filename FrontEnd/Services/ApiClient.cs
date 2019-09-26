@@ -35,7 +35,7 @@ namespace FrontEnd.Services
             _cache = memoryCacheSingleton.Cache;
         }
 
-        public async Task<bool> AddAttendeeAsync(Attendee attendee)
+        public async Task<bool> CreateAttendeeAsync(Attendee attendee)
         {
             var response = await _httpClient.PostAsJsonAsync(_attendeesUri, attendee);
 
@@ -295,6 +295,20 @@ namespace FrontEnd.Services
             response.EnsureSuccessStatusCode();
         }
 
+        public async Task CreateSpeakerAsync(SpeakerRequest speaker)
+        {
+            var response = await _httpClient.PostAsJsonAsync(_speakersUri, speaker);
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task DeleteSpeakerAsync(int id)
+        {
+            var response = await _httpClient.DeleteAsync($"{_speakersUri}/{id}");
+
+            response.EnsureSuccessStatusCode();
+        }
+
         private static MemoryCacheEntryOptions GetCacheEntryOptions()
         {
             return new MemoryCacheEntryOptions()
@@ -302,5 +316,4 @@ namespace FrontEnd.Services
               .SetSlidingExpiration(TimeSpan.FromMinutes(2));
         }
     }
-
 }
