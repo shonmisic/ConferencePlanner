@@ -58,6 +58,26 @@ namespace BackEnd.Infrastructure
                     .ToList()
             };
 
+        public static Speaker MapSpeaker(this ConferenceDTO.SpeakerRequest speaker)
+        {
+            var mappedSpeaker = new Speaker
+            {
+                Name = speaker.Name,
+                Bio = speaker.Bio,
+                WebSite = speaker.WebSite
+            };
+
+            mappedSpeaker.SessionSpeakers = speaker.Sessions.Select(s => new SessionSpeaker
+                                                            {
+                                                                Speaker = mappedSpeaker,
+                                                                Session = s.MapSession()
+                                                            })
+                                                            .ToList();
+
+            return mappedSpeaker;
+        }
+
+
         public static ConferenceDTO.AttendeeResponse MapAttendeeResponse(this Attendee attendee) =>
             new ConferenceDTO.AttendeeResponse
             {

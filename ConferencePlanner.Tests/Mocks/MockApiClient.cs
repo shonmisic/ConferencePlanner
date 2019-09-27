@@ -199,5 +199,10 @@ namespace ConferencePlanner.Tests.Mocks
         {
             throw new NotImplementedException();
         }
+
+        public Task CreateSpeakerAsync(SpeakerRequest speaker)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

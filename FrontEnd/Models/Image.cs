@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace FrontEnd.Pages.Models
+﻿namespace FrontEnd.Models
 {
     public class Image : ConferenceDTO.Image
     {
