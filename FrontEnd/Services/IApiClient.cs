@@ -1,6 +1,6 @@
-﻿using ConferenceDTO;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using ConferenceDTO;
 
 namespace FrontEnd.Services
 {
@@ -15,8 +15,10 @@ namespace FrontEnd.Services
         Task<AttendeeResponse> GetAttendeeAsync(string name);
         Task DeleteSessionAsync(int id);
         Task<ICollection<SearchResult>> SearchAsync(string query);
+        Task CreateConferenceAsync(ConferenceRequest conference);
         Task CreateSpeakerAsync(SpeakerRequest speaker);
         Task<ICollection<SessionResponse>> GetSessionsByAttendeeAsync(string name, int conferenceId);
+        Task<ICollection<ConferenceResponse>> GetAllConferences();
         Task AddSessionToAttendeeAsync(string name, int sessionId);
         Task RemoveSessionFromAttendeeAsync(string name, int sessionId);
         Task DeleteSpeakerAsync(int id);
@@ -28,5 +30,6 @@ namespace FrontEnd.Services
         Task<IEnumerable<ConferenceResponse>> GetConferencesForFollowingFiveDays();
         Task<ConferenceResponse> GetConference(int conferenceId);
         Task DeleteTrackAsync(int id);
+        Task DeleteConference(int conferenceId);
     }
 }

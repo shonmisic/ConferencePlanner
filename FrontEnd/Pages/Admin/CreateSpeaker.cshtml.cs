@@ -24,10 +24,16 @@ namespace FrontEnd.Pages.Admin
         public void OnGet()
         {
             var newSession = TempData.Get<Session>(TempDataKey.NewSession);
+            var newImage = TempData.Get<ImageRequest>(TempDataKey.NewImage);
 
             if (newSession != null)
             {
                 Speaker.Sessions.Add(newSession);
+            }
+
+            if (newImage != null)
+            {
+                Speaker.Image = newImage;
             }
         }
 

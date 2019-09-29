@@ -14,20 +14,29 @@
 
 <div class="agenda">
     <div class="row">
-        @foreach (var conference in Model.Conferences)
-        {
-            <div class="col-md-3 mb-4">
-                <div class="card shadow session h-100">
-                    <div class="card-body">
-                        <h5 class="card-title"><a asp-route-id="@conference.ID">@conference.Name</a></h5>
-                    </div>
-                    <div class="card-footer">
-                        <a asp-page="/Admin/Tracks" asp-route-conferenceId="@conference.ID">Tracks</a>
+        <div class="col">
+            <a asp-page="/Admin/CreateConference">Create new conference</a>
+        </div>
+    </div>
+    <form authz="true" method="post">
+        <div class="row">
+            @foreach (var conference in Model.Conferences)
+            {
+                <div class="col-md-3 mb-4">
+                    <div class="card shadow session h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><a asp-route-id="@conference.ID">@conference.Name</a></h5>
+                            <a asp-page="/Admin/Tracks" asp-route-conferenceId="@conference.ID">Tracks</a>
+                        </div>
+                        <div authz-policy="Admin" class="card-footer">
+                            <input type="hidden" name="id" value="@conference.ID" />
+                            <button type="submit" asp-page-handler="Remove" class="btn btn-danger btn-sm">Delete Conference</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    </form>
 
     @if (Model.SelectedConference != null)
     {

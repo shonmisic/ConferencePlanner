@@ -68,16 +68,9 @@ namespace FrontEnd.Pages
                 .OrderBy(s => s.Key);
         }
 
-        public async Task<IActionResult> OnPostAsync(int sessionId)
+        public async Task<IActionResult> OnPostRemoveAsync(int conferenceId)
         {
-            await _apiClient.AddSessionToAttendeeAsync(User.Identity.Name, sessionId);
-
-            return RedirectToPage();
-        }
-
-        public async Task<IActionResult> OnPostRemoveAsync(int sessionId)
-        {
-            await _apiClient.RemoveSessionFromAttendeeAsync(User.Identity.Name, sessionId);
+            await _apiClient.DeleteConference(conferenceId);
 
             return RedirectToPage();
         }

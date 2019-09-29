@@ -204,5 +204,20 @@ namespace ConferencePlanner.Tests.Mocks
         {
             throw new NotImplementedException();
         }
+
+        public Task CreateConferenceAsync(ConferenceRequest conference)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ICollection<ConferenceResponse>> GetAllConferences()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteConference(int conferenceId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

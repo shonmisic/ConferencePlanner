@@ -2,6 +2,7 @@
 {
     public enum TempDataKey
     {
-        NewSession
+        NewSession,
+        NewImage
     }
 }

@@ -22,9 +22,6 @@ namespace ConferenceDTO
         [Required]
         public string ImageType { get; set; }
 
-        [Required]
-        public int AttendeeId { get; set; }
-
         public string Url { get; set; }
     }
 }

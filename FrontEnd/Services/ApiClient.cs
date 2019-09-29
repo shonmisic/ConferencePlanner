@@ -254,7 +254,7 @@ namespace FrontEnd.Services
         {
             if (!_cache.TryGetValue(_getConferences, out IEnumerable<ConferenceResponse> conferences))
             {
-                var response = await _httpClient.GetAsync($"{_conferencesUri}");
+                var response = await _httpClient.GetAsync($"{_conferencesUri}/5-days");
 
                 response.EnsureSuccessStatusCode();
 
@@ -264,6 +264,15 @@ namespace FrontEnd.Services
             }
 
             return conferences;
+        }
+
+        public async Task<ICollection<ConferenceResponse>> GetAllConferences()
+        {
+            var response = await _httpClient.GetAsync($"{_conferencesUri}");
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsJsonAsync<ICollection<ConferenceResponse>>();
         }
 
         public async Task<ConferenceResponse> GetConference(int conferenceId)
@@ -305,6 +314,20 @@ namespace FrontEnd.Services
         public async Task DeleteSpeakerAsync(int id)
         {
             var response = await _httpClient.DeleteAsync($"{_speakersUri}/{id}");
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task CreateConferenceAsync(ConferenceRequest conference)
+        {
+            var response = await _httpClient.PostAsJsonAsync(_conferencesUri, conference);
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task DeleteConference(int id)
+        {
+            var response = await _httpClient.DeleteAsync($"{_conferencesUri}/{id}");
 
             response.EnsureSuccessStatusCode();
         }

@@ -1,11 +1,12 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using BackEnd.Infrastructure;
 using BackEnd.Repositories;
 using ConferenceDTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using System;
-using System.Threading.Tasks;
 
 namespace BackEnd
 {
@@ -88,9 +89,7 @@ namespace BackEnd
 
             var newAttendee = await _attendeesRepository.AddSessionAsync(username, sessionId);
 
-            var result = newAttendee.MapAttendeeResponse();
-
-            return result;
+            return newAttendee.MapAttendeeResponse();
         }
 
         [HttpDelete("{username}/session/{sessionId:int}")]
@@ -107,22 +106,16 @@ namespace BackEnd
                 return NotFound();
             }
 
-            var session = await _sessionsRepository.GetByIdAsync(sessionId);
+            var sessionAttendee = attendee.SessionAttendees.SingleOrDefault(sa => sa.SessionId == sessionId);
 
-            if (session == null)
+            if (sessionAttendee == null)
             {
                 return BadRequest();
             }
 
-            try
-            {
-                await _attendeesRepository.RemoveSessionAsync(username, sessionId);
-            }
-            catch (Exception e)
-            {
+            var success = attendee.SessionAttendees.Remove(sessionAttendee);
 
-                throw;
-            }
+            await _attendeesRepository.UpdateAsync(attendee);
 
             return NoContent();
         }
@@ -141,17 +134,21 @@ namespace BackEnd
                 return NotFound();
             }
 
-            var image = new Data.Image
+            attendee.AttendeeImages.Add(new Data.AttendeeImage
             {
-                Name = imageRequest.Name,
-                Content = imageRequest.Content,
-                UploadDate = DateTimeOffset.Now,
-                AttendeeId = attendee.ID,
-                ImageType = imageRequest.ImageType,
-            };
-            var newAttendee = await _attendeesRepository.AddImageAsync(username, image);
+                Attendee = attendee,
+                Image = new Data.Image
+                {
+                    Name = imageRequest.Name,
+                    Content = imageRequest.Content,
+                    UploadDate = DateTimeOffset.Now,
+                    ImageType = imageRequest.ImageType,
+                }
+            });
 
-            var result = newAttendee.MapAttendeeResponse();
+            await _attendeesRepository.UpdateAsync(attendee);
+
+            var result = attendee.MapAttendeeResponse();
 
             return result;
         }

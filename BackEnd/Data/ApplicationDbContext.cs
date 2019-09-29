@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Data
 {
@@ -31,6 +30,12 @@ namespace BackEnd.Data
 
             modelBuilder.Entity<SessionTag>()
                 .HasKey(st => new { st.SessionId, st.TagId });
+
+            modelBuilder.Entity<AttendeeImage>()
+                .HasKey(ai => new { ai.AttendeeId, ai.ImageId });
+
+            modelBuilder.Entity<SpeakerImage>()
+                .HasKey(si => new { si.SpeakerId, si.ImageId });
         }
 
         public DbSet<Speaker> Speakers { get; set; }

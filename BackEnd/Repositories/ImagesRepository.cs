@@ -19,7 +19,11 @@ namespace BackEnd.Repositories
 
         public async Task<ICollection<Image>> GetImagesAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            return await _dbContext.Images.Include(i => i.Attendee).ToListAsync();
+            return await _dbContext.Images.Include(i => i.AttendeeImages)
+                                            .ThenInclude(ai => ai.Attendee)
+                                        .Include(i => i.SpeakerImages)
+                                            .ThenInclude(si => si.Speaker)
+                                        .ToListAsync();
         }
     }
 }
