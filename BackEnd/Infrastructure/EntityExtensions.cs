@@ -1,8 +1,8 @@
-﻿using System;
+﻿using BackEnd.Data;
+using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
-using BackEnd.Data;
 
 namespace BackEnd.Infrastructure
 {
@@ -133,6 +133,13 @@ namespace BackEnd.Infrastructure
                         })
                     .ToList(),
             };
+
+        public static void UpdateValuesFrom(this Attendee attendee, ConferenceDTO.Attendee input)
+        {
+            attendee.EmailAddress = input.EmailAddress;
+            attendee.FirstName = input.FirstName;
+            attendee.LastName = input.LastName;
+        }
 
         public static ConferenceDTO.ImageResponse MapImageResponse(this Image image) =>
             new ConferenceDTO.ImageResponse

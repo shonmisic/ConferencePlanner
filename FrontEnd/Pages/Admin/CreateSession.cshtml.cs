@@ -28,7 +28,7 @@ namespace FrontEnd.Pages.Admin
 
         public async Task OnGetAsync()
         {
-            var conferences = await _apiClient.GetAllConferences();
+            var conferences = await _apiClient.GetAllConferencesAsync();
 
             ConferenceItemList = 
                 conferences.Select(c => new SelectListItem

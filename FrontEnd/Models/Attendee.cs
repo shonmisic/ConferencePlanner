@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace FrontEnd.Models
@@ -14,5 +15,8 @@ namespace FrontEnd.Models
         [DisplayName("Email address")]
         [DataType(DataType.EmailAddress)]
         public override string EmailAddress { get; set; }
+        
+        [DisplayName("Conferences")]
+        public ICollection<ConferenceDTO.ConferenceResponse> Conferences { get; set; }
     }
 }

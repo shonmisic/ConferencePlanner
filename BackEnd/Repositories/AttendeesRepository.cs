@@ -66,7 +66,7 @@ namespace BackEnd.Repositories
             return success;
         }
 
-        public async Task UpdateAsync(Attendee attendee, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task UpdateAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             await _dbContext.SaveChangesAsync();
         }

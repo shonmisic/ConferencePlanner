@@ -6,6 +6,7 @@ using BackEnd.Repositories;
 using ConferenceDTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace BackEnd
@@ -16,14 +17,19 @@ namespace BackEnd
     {
         private readonly IAttendeesRepository _attendeesRepository;
         private readonly ISessionsRepository _sessionsRepository;
+        private readonly IConferencesRepository _conferencesRepository;
         private readonly IDistributedCache _cache;
 
         private static readonly string _getAttendee = "GetAttendee";
 
-        public AttendeesController(IAttendeesRepository attendeesRepository, ISessionsRepository sessionsRepository, IDistributedCache cache)
+        public AttendeesController(IAttendeesRepository attendeesRepository, 
+            ISessionsRepository sessionsRepository, 
+            IConferencesRepository conferencesRepository, 
+            IDistributedCache cache)
         {
             _attendeesRepository = attendeesRepository;
             _sessionsRepository = sessionsRepository;
+            _conferencesRepository = conferencesRepository;
             _cache = cache;
         }
 
@@ -64,6 +70,43 @@ namespace BackEnd
             var result = attendee.MapAttendeeResponse();
 
             return CreatedAtAction(nameof(Get), new { username = result.UserName }, result);
+        }
+
+        // PUT: api/Speakers/5
+        [HttpPut("{username:string}")]
+        public async Task<IActionResult> PutAttendee(string username, Attendee input)
+        {
+            try
+            {
+                if (username != input.UserName)
+                {
+                    return BadRequest();
+                }
+
+                var attendee = await _attendeesRepository.GetByUsernameAsync(username);
+
+                if (attendee == null)
+                {
+                    return NotFound();
+                }
+
+                attendee.UpdateValuesFrom(input);
+
+                await _attendeesRepository.UpdateAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (_attendeesRepository.GetByUsernameAsync(username) == null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
         [HttpPost("{username}/session/{sessionId:int}")]
@@ -115,7 +158,67 @@ namespace BackEnd
 
             var success = attendee.SessionAttendees.Remove(sessionAttendee);
 
-            await _attendeesRepository.UpdateAsync(attendee);
+            await _attendeesRepository.UpdateAsync();
+
+            return NoContent();
+        }
+
+        [HttpPost("{username}/conference/{conferenceId:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
+        public async Task<ActionResult<AttendeeResponse>> AddConference(string username, int conferenceId)
+        {
+            var attendee = await _attendeesRepository.GetByUsernameAsync(username);
+
+            if (attendee == null)
+            {
+                return NotFound();
+            }
+
+            var conference = await _conferencesRepository.GetByIdAsync(conferenceId);
+
+            if (conference == null)
+            {
+                return BadRequest();
+            }
+
+            attendee.ConferenceAttendees.Add(new Data.ConferenceAttendee
+            {
+                Attendee = attendee,
+                Conference = conference,
+            });
+
+            await _attendeesRepository.UpdateAsync();
+
+            return attendee.MapAttendeeResponse();
+        }
+
+        [HttpDelete("{username}/conference/{conferenceId:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
+        public async Task<IActionResult> RemoveConference(string username, int conferenceId)
+        {
+            var attendee = await _attendeesRepository.GetByUsernameAsync(username);
+
+            if (attendee == null)
+            {
+                return NotFound();
+            }
+
+            var conferenceAttendee = attendee.ConferenceAttendees.SingleOrDefault(sa => sa.ConferenceId == conferenceId);
+
+            if (conferenceAttendee == null)
+            {
+                return BadRequest();
+            }
+
+            var success = attendee.ConferenceAttendees.Remove(conferenceAttendee);
+
+            await _attendeesRepository.UpdateAsync();
 
             return NoContent();
         }
@@ -146,7 +249,7 @@ namespace BackEnd
                 }
             });
 
-            await _attendeesRepository.UpdateAsync(attendee);
+            await _attendeesRepository.UpdateAsync();
 
             var result = attendee.MapAttendeeResponse();
 

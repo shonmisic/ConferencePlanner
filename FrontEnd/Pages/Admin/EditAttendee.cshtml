@@ -1,0 +1,70 @@
+﻿@page
+@model FrontEnd.Pages.Admin.EditAttendeeModel
+@{
+    ViewData["Title"] = "Edit Attendee";
+}
+
+<h1>Edit Attendee</h1>
+
+@if (Model.ShowMessage)
+{
+    <div class="alert alert-success alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        @Model.Message
+    </div>
+}
+
+    <form method="post" class="form-horizontal">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <input asp-for="Attendee.UserName" type="hidden" />
+        <div class="form-group">
+            <label asp-for="Attendee.FirstName" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="Attendee.FirstName" class="form-control" />
+                <span asp-validation-for="Attendee.FirstName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Attendee.LastName" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="Attendee.LastName" class="form-control" />
+                <span asp-validation-for="Attendee.LastName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Attendee.EmailAddress" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="Attendee.EmailAddress" class="form-control" />
+                <span asp-validation-for="Attendee.EmailAddress" class="text-danger"></span>
+            </div>
+        </div>
+        @foreach (var conference in Model.Conferences)
+        {
+            <p>
+                @conference.Name
+            </p>
+            @if (Model.IsAttendingConference(conference.ID))
+            {
+                <button authz="true" type="submit" asp-page-handler="RemoveConference" asp-route-conferenceId="@conference.ID" class="btn btn-default btn-sm" title="Remove from attendance">
+                    <i class="icon ion-md-star" aria-hidden="true"></i>
+                </button>
+            }
+            else
+            {
+                <button authz="true" type="submit" asp-page-handler="AddConference" asp-route-conferenceId="@conference.ID" class="btn btn-default btn-sm bg-transparent" title="Add to attendance">
+                    <i class="icon ion-md-star-outline" aria-hidden="true"></i>
+                </button>
+            }
+        }
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" asp-page-handler="Delete" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

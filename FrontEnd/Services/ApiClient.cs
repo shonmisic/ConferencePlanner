@@ -1,5 +1,6 @@
 ﻿using ConferenceDTO;
 using FrontEnd.Infrastructure;
+using FrontEnd.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,6 @@ namespace FrontEnd.Services
         private static readonly string _getSpeakersKey = "_GetSpeakers";
         private static readonly string _getSearchResults = "_GetSearchResults";
         private static readonly string _getImages = "_GetImages";
-        private static readonly string _getTracks = "_GetTracks";
         private static readonly string _getConferences = "_GetConferences";
 
         private readonly IMemoryCache _cache;
@@ -35,7 +35,7 @@ namespace FrontEnd.Services
             _cache = memoryCacheSingleton.Cache;
         }
 
-        public async Task<bool> CreateAttendeeAsync(Attendee attendee)
+        public async Task<bool> CreateAttendeeAsync(ConferenceDTO.Attendee attendee)
         {
             var response = await _httpClient.PostAsJsonAsync(_attendeesUri, attendee);
 
@@ -266,7 +266,7 @@ namespace FrontEnd.Services
             return conferences;
         }
 
-        public async Task<ICollection<ConferenceResponse>> GetAllConferences()
+        public async Task<ICollection<ConferenceResponse>> GetAllConferencesAsync()
         {
             var response = await _httpClient.GetAsync($"{_conferencesUri}");
 
@@ -328,6 +328,43 @@ namespace FrontEnd.Services
         public async Task DeleteConference(int id)
         {
             var response = await _httpClient.DeleteAsync($"{_conferencesUri}/{id}");
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<ICollection<AttendeeResponse>> GetAllAttendeesAsync()
+        {
+            var response = await _httpClient.GetAsync(_attendeesUri);
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsJsonAsync<ICollection<AttendeeResponse>>();
+        }
+
+        public async Task DeleteAttendeeAsync(string username)
+        {
+            var response = await _httpClient.DeleteAsync($"{_attendeesUri}/{username}");
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task PutAttendeeAsync(Models.Attendee attendee)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"{_attendeesUri}/{attendee.UserName}", attendee);
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task RemoveConferenceFromAttendeeAsync(string username, int conferenceId)
+        {
+            var response = await _httpClient.DeleteAsync($"{_attendeesUri}/{username}/conference/{conferenceId}");
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task AddConferenceToAttendeeAsync(string username, int conferenceId)
+        {
+            var response = await _httpClient.PostAsync($"{_attendeesUri}/{username}/conference/{conferenceId}", null);
 
             response.EnsureSuccessStatusCode();
         }
