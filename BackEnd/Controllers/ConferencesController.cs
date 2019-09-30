@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using BackEnd.Data;
+using BackEnd.Infrastructure;
 using ConferenceDTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,19 +24,22 @@ namespace BackEnd.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<ConferenceResponse>>> GetConferences()
+        public async Task<ActionResult<List<ConferenceResponse>>> GetAllConferences()
         {
-            var conferences = await _db.Conferences.AsNoTracking().Select(s => new ConferenceResponse
-            {
-                ID = s.ID,
-                Name = s.Name,
-                StartTime = s.StartTime,
-                EndTime = s.EndTime,
-                Url = s.Url
-            })
-            .ToListAsync();
+            return await _db.Conferences.AsNoTracking()
+                                        .Select(s => s.MapConferenceResponse())
+                                        .ToListAsync();
+        }
 
-            return conferences;
+        [HttpGet("/5-days")]
+        public async Task<ActionResult<List<ConferenceResponse>>> GetConferencesForFollowingFiveDays()
+        {
+            var dateTimeNow = DateTimeOffset.Now;
+
+            return await _db.Conferences.AsNoTracking()
+                                        .Where(c => IsConferenceWithinDateRange(dateTimeNow, dateTimeNow.AddDays(5), c))
+                                        .Select(s => s.MapConferenceResponse())
+                                        .ToListAsync();
         }
 
         [HttpGet("{id:int}")]
@@ -126,12 +131,7 @@ namespace BackEnd.Controllers
 
             await _db.SaveChangesAsync();
 
-            var result = new ConferenceResponse
-            {
-                ID = conference.ID,
-                Name = conference.Name
-            };
-            return result;
+            return conference.MapConferenceResponse();
         }
 
         private static DataLoader GetLoader(ConferenceFormat format)
@@ -140,7 +140,17 @@ namespace BackEnd.Controllers
             {
                 return new SessionizeLoader();
             }
+
             return new DevIntersectionLoader();
+        }
+
+        private static bool IsConferenceWithinDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate, Data.Conference s)
+        {
+            var startTime = s.StartTime ?? DateTimeOffset.MinValue;
+            var endTime = s.EndTime ?? DateTimeOffset.MaxValue;
+
+            return startTime.CompareTo(fromDate.Value) >= 0
+                && endTime.CompareTo(toDate.Value) <= 0;
         }
 
         public enum ConferenceFormat

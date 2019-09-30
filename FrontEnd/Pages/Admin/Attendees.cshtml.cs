@@ -7,22 +7,22 @@ using System.Threading.Tasks;
 
 namespace FrontEnd.Pages.Admin
 {
-    public class SpeakersModel : PageModel
+    public class AttendeesModel : PageModel
     {
         private readonly IApiClient _apiClient;
 
-        public SpeakersModel(IApiClient apiClient)
+        public AttendeesModel(IApiClient apiClient)
         {
             _apiClient = apiClient;
         }
 
-        public ICollection<SpeakerResponse> Speakers { get; set; }
+        public ICollection<AttendeeResponse> Attendees { get; set; }
 
         public async Task<IActionResult> OnGet()
         {
-            Speakers = await _apiClient.GetSpeakersAsync();
+            Attendees = await _apiClient.GetAllAttendeesAsync();
 
-            if (Speakers == null)
+            if (Attendees == null)
             {
                 return NotFound();
             }
@@ -30,9 +30,9 @@ namespace FrontEnd.Pages.Admin
             return Page();
         }
 
-        public async Task<IActionResult> OnPostRemoveAsync(int id)
+        public async Task<IActionResult> OnPostRemoveAsync(string username)
         {
-            await _apiClient.DeleteSpeakerAsync(id);
+            await _apiClient.DeleteAttendeeAsync(username);
 
             return RedirectToPage();
         }

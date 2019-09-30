@@ -1,4 +1,5 @@
 ﻿using BackEnd.Data;
+using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -58,6 +59,41 @@ namespace BackEnd.Infrastructure
                     .ToList()
             };
 
+        public static Speaker MapSpeaker(this ConferenceDTO.SpeakerRequest speaker)
+        {
+            var mappedSpeaker = new Speaker
+            {
+                Name = speaker.Name,
+                Bio = speaker.Bio,
+                WebSite = speaker.WebSite,
+            };
+
+            mappedSpeaker.SessionSpeakers =
+                speaker.Sessions.Select(s => new SessionSpeaker
+                {
+                    Speaker = mappedSpeaker,
+                    Session = s.MapSession()
+                })
+                .ToList();
+
+            mappedSpeaker.SpeakerImages.Add(new SpeakerImage
+            {
+                Speaker = mappedSpeaker,
+                Image = speaker.Image.MapImage()
+            });
+
+            return mappedSpeaker;
+        }
+
+        public static Image MapImage(this ConferenceDTO.ImageRequest image) =>
+            new Image
+            {
+                Content = image.Content,
+                ImageType = image.ImageType,
+                Name = image.Name,
+                UploadDate = DateTimeOffset.Now,
+            };
+
         public static ConferenceDTO.AttendeeResponse MapAttendeeResponse(this Attendee attendee) =>
             new ConferenceDTO.AttendeeResponse
             {
@@ -82,36 +118,32 @@ namespace BackEnd.Infrastructure
                         {
                             ID = ca.Conference.ID,
                             Name = ca.Conference.Name,
-                            Url = $"{_baseUrlFrontEnd}/Conferences/{ca.ConferenceId}"
+                            Url = CreateConferenceUrl(ca.ConferenceId)
                         })
                     .ToList(),
-                Images = attendee.Images?
-                    .Select(i =>
+                Images = attendee.AttendeeImages?
+                    .Select(ai =>
                         new ConferenceDTO.Image
                         {
-                            ID = i.ID,
-                            AttendeeId = i.AttendeeId,
-                            UploadDate = i.UploadDate,
-                            Content = i.Content,
-                            Name = i.Name,
-                            Url = $"{_baseUrlFrontEnd}/Images/{i.ID}"
+                            ID = ai.ImageId,
+                            UploadDate = ai.Image.UploadDate,
+                            Content = ai.Image.Content,
+                            Name = ai.Image.Name,
+                            Url = CreateImageUrl(ai.Image.ID)
                         })
                     .ToList(),
             };
 
+        public static void UpdateValuesFrom(this Attendee attendee, ConferenceDTO.Attendee input)
+        {
+            attendee.EmailAddress = input.EmailAddress;
+            attendee.FirstName = input.FirstName;
+            attendee.LastName = input.LastName;
+        }
+
         public static ConferenceDTO.ImageResponse MapImageResponse(this Image image) =>
             new ConferenceDTO.ImageResponse
             {
-                Attendee = new ConferenceDTO.Attendee
-                {
-                    ID = image.Attendee.ID,
-                    EmailAddress = image.Attendee.EmailAddress,
-                    FirstName = image.Attendee.FirstName,
-                    LastName = image.Attendee.LastName,
-                    UserName = image.Attendee.UserName,
-                    Url = $"{_baseUrlFrontEnd}/Conferences/{image.AttendeeId}",
-                },
-                AttendeeId = image.AttendeeId,
                 Content = image.Content,
                 ID = image.ID,
                 Name = image.Name,
@@ -139,6 +171,16 @@ namespace BackEnd.Infrastructure
                         Url = CreateSessionUrl(s.ID)
                     })
                     .ToList()
+            };
+
+        public static ConferenceDTO.ConferenceResponse MapConferenceResponse(this Conference conference) =>
+            new ConferenceDTO.ConferenceResponse
+            {
+                ID = conference.ID,
+                Name = conference.Name,
+                StartTime = conference.StartTime,
+                EndTime = conference.EndTime,
+                Url = CreateConferenceUrl(conference.ID)
             };
 
         public static Track MapTrack(this ConferenceDTO.TrackRequest trackRequest) =>
@@ -190,9 +232,24 @@ namespace BackEnd.Infrastructure
             }
         }
 
-        private static string CreateSessionUrl(int sessionId)
+        private static string CreateAttendeeUrl(int id)
         {
-            return $"{_baseUrlFrontEnd}/Sessions/{sessionId}";
+            return $"{_baseUrlFrontEnd}/Attendees/{id}";
+        }
+
+        private static string CreateSessionUrl(int id)
+        {
+            return $"{_baseUrlFrontEnd}/Sessions/{id}";
+        }
+
+        private static string CreateConferenceUrl(int id)
+        {
+            return $"{_baseUrlFrontEnd}/Conferences/{id}";
+        }
+
+        private static string CreateImageUrl(int id)
+        {
+            return $"{_baseUrlFrontEnd}/Images/{id}";
         }
     }
 }

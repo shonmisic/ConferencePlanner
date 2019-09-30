@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using ConferenceDTO;
-using FrontEnd.Pages.Models;
 using FrontEnd.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
@@ -28,11 +24,6 @@ namespace FrontEnd.Pages
         {
             _apiClient = apiClient;
         }
-
-        [Required]
-        [Display(Name = "Image to upload")]
-        [BindProperty]
-        public ImageUpload ImageUpload { get; set; }
 
         public IEnumerable<Models.Image> Images { get; set; }
 
@@ -79,35 +70,6 @@ namespace FrontEnd.Pages
                     }
                 }
             };
-        }
-
-        public async Task<IActionResult> OnPostAsync()
-        {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
-
-            using (var ms = new MemoryStream())
-            {
-                var image = ImageUpload.Image;
-
-                await image.CopyToAsync(ms);
-
-                var imageBytes = ms.ToArray();
-                var imageContent = Convert.ToBase64String(imageBytes);
-
-                var imageRequest = new ImageRequest
-                {
-                    Name = ImageUpload.Name,
-                    Content = imageContent,
-                    ImageType = image.ContentType
-                };
-
-                await _apiClient.AddImageToAttendeeAsync(User.Identity.Name, imageRequest);
-
-                return RedirectToPage();
-            }
         }
     }
 }

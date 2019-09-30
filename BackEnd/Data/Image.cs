@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace BackEnd.Data
 {
     public class Image : ConferenceDTO.Image
     {
-        public Attendee Attendee { get; set; }
+        public virtual ICollection<SpeakerImage> SpeakerImages { get; set; }
+        public virtual ICollection<AttendeeImage> AttendeeImages { get; set; }
     }
 }

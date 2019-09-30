@@ -4,4 +4,33 @@
     ViewData["Title"] = "Speakers";
 }
 
+<h1>All speakers</h1>
+
+<form authz="true" method="post">
+    <p class="mb-0">
+        <a asp-page="/Admin/CreateSpeaker">Create new Speaker</a>
+    </p>
+
+    <div class="row">
+        @foreach (var speaker in Model.Speakers)
+        {
+            <div class="col-md-3 mb-4">
+                <div class="card shadow track h-100">
+                    <div class="card-header">
+                        <h5 class="card-title"><a asp-page="/Speaker" asp-route-id="@speaker.ID">@speaker.Name</a></h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-text">@speaker.Bio</div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="card-link">@speaker.WebSite</div>
+                        <input type="hidden" name="id" value="@speaker.ID" />
+                        <button type="submit" asp-page-handler="Remove" class="btn btn-danger btn-sm">Delete Speaker</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</form>
+
 

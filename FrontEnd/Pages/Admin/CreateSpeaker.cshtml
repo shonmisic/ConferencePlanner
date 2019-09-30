@@ -1,0 +1,77 @@
+﻿@page
+@model FrontEnd.Pages.Admin.CreateSpeakerModel
+@{
+    ViewData["Title"] = "CreateSpeaker";
+}
+
+<p>
+    Create new Speaker
+</p>
+
+<form method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <p class="mb-0">
+        <a asp-page="/UploadImage">Upload speaker profile Image</a>
+    </p>
+    <div class="form-group">
+        <label asp-for="Speaker.Name" class="control-label"></label>
+        <div class="row">
+            <div class="col-md-6">
+                <input asp-for="Speaker.Name" class="form-control" />
+            </div>
+        </div>
+        <span asp-validation-for="Speaker.Name" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Speaker.Bio" class="control-label"></label>
+        <div class="row">
+            <div class="col-md-6">
+                <input asp-for="Speaker.Bio" class="form-control" />
+            </div>
+        </div>
+        <span asp-validation-for="Speaker.Bio" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Speaker.WebSite" class="control-label"></label>
+        <div class="row">
+            <div class="col-md-6">
+                <input asp-for="Speaker.WebSite" class="form-control" />
+            </div>
+        </div>
+        <span asp-validation-for="Speaker.WebSite" class="text-danger"></span>
+    </div>
+    <p class="mb-0">
+        <a asp-page="/Admin/CreateSession">Create new Session for speaker</a>
+    </p>
+    @foreach (var session in Model.Speaker.Sessions.Select((value, i) => new { i, value }))
+    {
+        <div class="col-md-3 mb-4">
+            <div class="card shadow track h-100">
+                <div class="card-header">
+                    <h5 class="card-title">@session.value.Title</h5>
+                </div>
+                <div class="card-body">
+                    <div class="card-text">@session.value.Abstract</div>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col">@session.value.StartTime</div>
+                        <div class="col">@session.value.EndTime</div>
+                    </div>
+                    <input type="hidden" name="index" value="@session.i" />
+                    <button type="submit" asp-page-handler="Remove" class="btn btn-danger btn-sm">Delete Session</button>
+                </div>
+            </div>
+        </div>
+    }
+    <div class="form-group">
+        <div class="">
+            <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

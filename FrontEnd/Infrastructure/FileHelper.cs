@@ -1,13 +1,10 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System;
 using System.IO;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using FrontEnd.Pages.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace FrontEnd.Infrastructure
 {
@@ -50,7 +47,8 @@ namespace FrontEnd.Infrastructure
                                 $"The file ({fileName}) must be a text file.");
                         }
                     }
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     modelState.AddModelError(formFile.Name,
                         $"The file ({fileName}) upload failed. " +

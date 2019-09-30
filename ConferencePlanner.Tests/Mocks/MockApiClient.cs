@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ConferenceDTO;
+using FrontEnd.Models;
 using FrontEnd.Services;
 
 namespace ConferencePlanner.Tests.Mocks
 {
     public class MockApiClient : IApiClient
     {
-        public Task<bool> AddAttendeeAsync(Attendee attendee)
+        public Task<bool> CreateAttendeeAsync(ConferenceDTO.Attendee attendee)
         {
             throw new NotImplementedException();
         }
@@ -191,6 +192,61 @@ namespace ConferencePlanner.Tests.Mocks
         }
 
         public Task<ICollection<SearchResult>> SearchAsync(string query)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteAttendeeAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CreateSpeakerAsync(SpeakerRequest speaker)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CreateConferenceAsync(ConferenceRequest conference)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ICollection<ConferenceResponse>> GetAllConferencesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteConference(int conferenceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ICollection<AttendeeResponse>> GetAllAttendeesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteSpeakerAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteAttendeeAsync(string username)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task PutAttendeeAsync(FrontEnd.Models.Attendee attendee)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RemoveConferenceFromAttendeeAsync(string username, int conferenceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task AddConferenceToAttendeeAsync(string userName, int conferenceId)
         {
             throw new NotImplementedException();
         }

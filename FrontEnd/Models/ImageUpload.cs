@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
-namespace FrontEnd.Pages.Models
+namespace FrontEnd.Models
 {
     public class ImageUpload
     {

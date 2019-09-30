@@ -22,13 +22,14 @@ namespace ConferencePlanner.Tests.UnitTests.BackEndTests
             var attendeesRepositoryStub = new Mock<IAttendeesRepository>();
             attendeesRepositoryStub.Setup(ar => ar.GetByUsernameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testAttendee);
-
+            
             var sessionsRepositoryStub = new Mock<ISessionsRepository>();
+            var conferencesRepositoryStub = new Mock<IConferencesRepository>();
 
             var cacheStub = new Mock<IDistributedCache>();
             cacheStub.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync((byte[]) null);
 
-            var controller = new AttendeesController(attendeesRepositoryStub.Object, sessionsRepositoryStub.Object, cacheStub.Object);
+            var controller = new AttendeesController(attendeesRepositoryStub.Object, sessionsRepositoryStub.Object, conferencesRepositoryStub.Object, cacheStub.Object);
 
             var result = (await controller.Get(username)).Value;
             var expectedValue = GetTestAttendeeResponse(username);

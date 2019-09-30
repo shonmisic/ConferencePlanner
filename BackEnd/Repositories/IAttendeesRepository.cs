@@ -10,6 +10,6 @@ namespace BackEnd.Repositories
         Task<Attendee> AddAsync(Attendee attendee, CancellationToken cancellationToken = default(CancellationToken));
         Task<Attendee> AddSessionAsync(string username, int sessionId, CancellationToken cancellationToken = default(CancellationToken));
         Task<bool> RemoveSessionAsync(string username, int sessionId, CancellationToken cancellationToken = default(CancellationToken));
-        Task<Attendee> AddImageAsync(string username, Image image, CancellationToken cancellationToken = default(CancellationToken));
+        Task UpdateAsync(CancellationToken cancellationToken = default(CancellationToken));
     }
 }

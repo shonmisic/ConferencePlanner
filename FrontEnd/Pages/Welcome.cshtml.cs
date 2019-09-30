@@ -1,12 +1,12 @@
-﻿using System.Security.Claims;
-using System.Threading.Tasks;
-using FrontEnd.Filter;
-using FrontEnd.Pages.Models;
+﻿using FrontEnd.Filter;
+using FrontEnd.Models;
 using FrontEnd.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace FrontEnd.Pages
 {
@@ -37,7 +37,7 @@ namespace FrontEnd.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var success = await _apiClient.AddAttendeeAsync(Attendee);
+            var success = await _apiClient.CreateAttendeeAsync(Attendee);
 
             if (!success)
             {

@@ -9,29 +9,23 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace FrontEnd.Pages.Admin
 {
-    public class AddTrackModel : PageModel
+    public class CreateConferenceModel : PageModel
     {
         private readonly IApiClient _apiClient;
 
-        public AddTrackModel(IApiClient apiClient)
+        public CreateConferenceModel(IApiClient apiClient)
         {
             _apiClient = apiClient;
         }
 
         [BindProperty]
-        public TrackRequest Track { get; set; }
-        public int ConferenceId { get; set; }
-
-        public void OnGet(int conferenceId)
-        {
-            ConferenceId = conferenceId;
-        }
+        public ConferenceRequest Conference { get; set; }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            await _apiClient.CreateTrackAsync(Track);
+            await _apiClient.CreateConferenceAsync(Conference);
 
-            return RedirectToPage("/Admin/Tracks", new { Track.ConferenceId });
+            return RedirectToPage("/Index");
         }
     }
 }
