@@ -40,20 +40,17 @@
         </div>
         @foreach (var conference in Model.Conferences)
         {
-            <p>
-                @conference.Name
-            </p>
             @if (Model.IsAttendingConference(conference.ID))
             {
-                <button authz="true" type="submit" asp-page-handler="RemoveConference" asp-route-conferenceId="@conference.ID" class="btn btn-default btn-sm" title="Remove from attendance">
-                    <i class="icon ion-md-star" aria-hidden="true"></i>
-                </button>
+            <button authz="true" type="submit" asp-page-handler="RemoveConference" asp-route-conferenceId="@conference.ID" class="btn btn-default btn-sm" title="Remove from attendance">
+                @conference.Name <i class="icon ion-md-star" aria-hidden="true"></i>
+            </button>
             }
             else
             {
-                <button authz="true" type="submit" asp-page-handler="AddConference" asp-route-conferenceId="@conference.ID" class="btn btn-default btn-sm bg-transparent" title="Add to attendance">
-                    <i class="icon ion-md-star-outline" aria-hidden="true"></i>
-                </button>
+            <button authz="true" type="submit" asp-page-handler="AddConference" asp-route-conferenceId="@conference.ID" class="btn btn-default btn-sm bg-transparent" title="Add to attendance">
+                @conference.Name <i class="icon ion-md-star-outline" aria-hidden="true"></i>
+            </button>
             }
         }
         <div class="form-group">
