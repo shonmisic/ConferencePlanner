@@ -1,16 +1,16 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
-using BackEnd.Data;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-namespace BackEnd
+namespace BackEnd.Data
 {
     public class SessionizeLoader : DataLoader
     {
-        public override async Task LoadDataAsync(string conferenceName, Stream fileStream, ApplicationDbContext db)
+        public override async Task<Conference> LoadDataAsync(string conferenceName, Stream fileStream)
         {
             //var blah = new RootObject().rooms[0].sessions[0].speakers[0].name;
 
@@ -29,8 +29,8 @@ namespace BackEnd
                 {
                     if (!addedTracks.ContainsKey(room.name))
                     {
-                        var thisTrack = new Track { Name = room.name, Conference = conference };
-                        db.Tracks.Add(thisTrack);
+                        var thisTrack = new Track { Name = room.name };
+                        conference.Tracks.Add(thisTrack);
                         addedTracks.Add(thisTrack.Name, thisTrack);
                     }
 
@@ -41,7 +41,7 @@ namespace BackEnd
                             if (!addedSpeakers.ContainsKey(speaker.name))
                             {
                                 var thisSpeaker = new Speaker { Name = speaker.name };
-                                db.Speakers.Add(thisSpeaker);
+                                conference.Speakers.Add(thisSpeaker);
                                 addedSpeakers.Add(thisSpeaker.Name, thisSpeaker);
                             }
                         }
@@ -51,7 +51,6 @@ namespace BackEnd
                             if (!addedTags.ContainsKey(category.name))
                             {
                                 var thisTag = new Tag { Name = category.name };
-                                db.Tags.Add(thisTag);
                                 addedTags.Add(thisTag.Name, thisTag);
                             }
                         }
@@ -63,23 +62,26 @@ namespace BackEnd
                             StartTime = thisSession.startsAt,
                             EndTime = thisSession.endsAt,
                             Track = addedTracks[room.name],
-                            Abstract = thisSession.description
+                            Abstract = thisSession.description,
                         };
-
-                        session.SessionSpeakers = new List<SessionSpeaker>();
-                        foreach (var sp in thisSession.speakers)
+                        session.SessionTags = addedTags.Select(t => new SessionTag
                         {
-                            session.SessionSpeakers.Add(new SessionSpeaker
-                            {
-                                Session = session,
-                                Speaker = addedSpeakers[sp.name]
-                            });
-                        }
+                            Session = session,
+                            Tag = t.Value
+                        }).ToList();
 
-                        db.Sessions.Add(session);
+                        session.SessionSpeakers = addedSpeakers.Select(s => new SessionSpeaker
+                        {
+                            Session = session,
+                            Speaker = s.Value
+                        }).ToList();
+
+                        conference.Sessions.Add(session);
                     }
                 }
             }
+
+            return conference;
         }
 
         private class RootObject

@@ -10,6 +10,59 @@ namespace BackEnd.Infrastructure
     {
         private static readonly object _baseUrlFrontEnd = "https://localhost:44354";
 
+        public static Conference MapConference(this ConferenceDTO.ConferenceRequest conference)
+        {
+            var newConference = new Conference
+            {
+                ID = conference.ID,
+                Name = conference.Name,
+                StartTime = conference.StartTime,
+                EndTime = conference.EndTime,
+                Sessions = conference.Sessions.Select(s => s.MapSession()).ToList(),
+                Speakers = conference.Speakers.Select(s => s.MapSpeaker()).ToList(),
+                Tracks = conference.Tracks.Select(t => t.MapTrack()).ToList()
+            };
+
+            newConference.ConferenceAttendees = conference.Attendees?
+                                                    .Select(a => new ConferenceAttendee
+                                                    {
+                                                        Conference = newConference,
+                                                        ConferenceId = newConference.ID,
+                                                        AttendeeId = a.ID,
+                                                        Attendee = a.MapAttendee()
+                                                    })
+                                                    .ToList();
+
+            return newConference;
+        }
+
+        public static Attendee MapAttendee(this ConferenceDTO.Attendee attendee) =>
+            new Attendee
+            {
+                ID = attendee.ID,
+                UserName = attendee.UserName,
+                FirstName = attendee.FirstName,
+                LastName = attendee.LastName,
+                EmailAddress = attendee.EmailAddress,
+            };
+
+        public static Speaker MapSpeaker(this ConferenceDTO.Speaker speaker) =>
+            new Speaker
+            {
+                ID = speaker.ID,
+                Bio = speaker.Bio,
+                Name = speaker.Name,
+                WebSite = speaker.WebSite
+            };
+
+        public static Track MapTrack(this ConferenceDTO.Track track) =>
+            new Track
+            {
+                ID = track.ID,
+                Name = track.Name,
+                ConferenceId = track.ConferenceId
+            };
+
         public static ConferenceDTO.SessionResponse MapSessionResponse(this Session session) =>
             new ConferenceDTO.SessionResponse
             {
@@ -180,7 +233,52 @@ namespace BackEnd.Infrastructure
                 Name = conference.Name,
                 StartTime = conference.StartTime,
                 EndTime = conference.EndTime,
-                Url = CreateConferenceUrl(conference.ID)
+                Url = CreateConferenceUrl(conference.ID),
+                Sessions = conference.Sessions.Select(s => s.MapSession()).ToList(),
+                Speakers = conference.Speakers.Select(s => s.MapSpeaker()).ToList(),
+                Tracks = conference.Tracks.Select(t => t.MapTrack()).ToList(),
+                Attendees = conference.ConferenceAttendees.Select(ca => ca.Attendee.MapAttendee()).ToList()
+            };
+
+        public static ConferenceDTO.Speaker MapSpeaker(this Speaker speaker) =>
+            new ConferenceDTO.Speaker
+            {
+                Bio = speaker.Bio,
+                ID = speaker.ID,
+                Name = speaker.Name,
+                WebSite = speaker.WebSite
+            };
+
+        public static ConferenceDTO.Track MapTrack(this Track track) =>
+            new ConferenceDTO.Track
+            {
+                ID = track.ID,
+                Name = track.Name,
+                ConferenceId = track.ConferenceId
+            };
+
+        public static ConferenceDTO.Attendee MapAttendee(this Attendee attendee) =>
+            new ConferenceDTO.Attendee
+            {
+                EmailAddress = attendee.EmailAddress,
+                FirstName = attendee.FirstName,
+                ID = attendee.ID,
+                LastName = attendee.LastName,
+                Url = CreateAttendeeUrl(attendee.ID),
+                UserName = attendee.UserName
+            };
+
+        public static ConferenceDTO.Session MapSession(this Session session) =>
+            new ConferenceDTO.Session
+            {
+                ID = session.ID,
+                Title = session.Title,
+                Abstract = session.Abstract,
+                ConferenceId = session.ConferenceId,
+                EndTime = session.EndTime,
+                StartTime = session.StartTime,
+                TrackId = session.TrackId,
+                Url = CreateSessionUrl(session.ID)
             };
 
         public static Track MapTrack(this ConferenceDTO.TrackRequest trackRequest) =>

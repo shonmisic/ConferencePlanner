@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using BackEnd.Data;
 using Newtonsoft.Json;
@@ -10,7 +11,7 @@ namespace BackEnd
 {
     public class DevIntersectionLoader : DataLoader
     {
-        public override async Task LoadDataAsync(string conferenceName, Stream fileStream, ApplicationDbContext db)
+        public override async Task<Conference> LoadDataAsync(string conferenceName, Stream fileStream)
         {
             var reader = new JsonTextReader(new StreamReader(fileStream));
 
@@ -19,9 +20,9 @@ namespace BackEnd
             var speakerNames = new Dictionary<string, Speaker>();
             var tracks = new Dictionary<string, Track>();
 
-            JArray doc = await JArray.LoadAsync(reader);
+            var doc = await JArray.LoadAsync(reader);
 
-            foreach (JObject item in doc)
+            foreach (var item in doc)
             {
                 var theseSpeakers = new List<Speaker>();
                 foreach (var thisSpeakerName in item["speakerNames"])
@@ -29,7 +30,7 @@ namespace BackEnd
                     if (!speakerNames.ContainsKey(thisSpeakerName.Value<string>()))
                     {
                         var thisSpeaker = new Speaker { Name = thisSpeakerName.Value<string>() };
-                        db.Speakers.Add(thisSpeaker);
+                        conference.Speakers.Add(thisSpeaker);
                         speakerNames.Add(thisSpeakerName.Value<string>(), thisSpeaker);
                         Console.WriteLine(thisSpeakerName.Value<string>());
                     }
@@ -42,7 +43,7 @@ namespace BackEnd
                     if (!tracks.ContainsKey(thisTrackName.Value<string>()))
                     {
                         var thisTrack = new Track { Name = thisTrackName.Value<string>(), Conference = conference };
-                        db.Tracks.Add(thisTrack);
+                        conference.Tracks.Add(thisTrack);
                         tracks.Add(thisTrackName.Value<string>(), thisTrack);
                     }
                     theseTracks.Add(tracks[thisTrackName.Value<string>()]);
@@ -58,18 +59,16 @@ namespace BackEnd
                     Abstract = item["abstract"].Value<string>()
                 };
 
-                session.SessionSpeakers = new List<SessionSpeaker>();
-                foreach (var sp in theseSpeakers)
+                session.SessionSpeakers = theseSpeakers.Select(s => new SessionSpeaker
                 {
-                    session.SessionSpeakers.Add(new SessionSpeaker
-                    {
-                        Session = session,
-                        Speaker = sp
-                    });
-                }
+                    Session = session,
+                    Speaker = s
+                }).ToList();
 
-                db.Sessions.Add(session);
+                conference.Sessions.Add(session);
             }
+
+            return conference;
         }
     }
 }

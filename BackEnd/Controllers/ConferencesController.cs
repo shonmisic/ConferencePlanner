@@ -1,14 +1,15 @@
+using BackEnd.Data;
+using BackEnd.Infrastructure;
+using BackEnd.Repositories;
+using ConferenceDTO;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using BackEnd.Data;
-using BackEnd.Infrastructure;
-using ConferenceDTO;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Controllers
 {
@@ -16,19 +17,19 @@ namespace BackEnd.Controllers
     [ApiController]
     public class ConferencesController : ControllerBase
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IConferencesRepository _conferencesRepository;
 
-        public ConferencesController(ApplicationDbContext db)
+        public ConferencesController(IConferencesRepository conferencesRepository)
         {
-            _db = db;
+            _conferencesRepository = conferencesRepository;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<ConferenceResponse>>> GetAllConferences()
         {
-            return await _db.Conferences.AsNoTracking()
-                                        .Select(s => s.MapConferenceResponse())
-                                        .ToListAsync();
+            return await _conferencesRepository.GetAll()
+                                               .Select(c => c.MapConferenceResponse())
+                                               .ToListAsync();
         }
 
         [HttpGet("/5-days")]
@@ -36,46 +37,38 @@ namespace BackEnd.Controllers
         {
             var dateTimeNow = DateTimeOffset.Now;
 
-            return await _db.Conferences.AsNoTracking()
-                                        .Where(c => IsConferenceWithinDateRange(dateTimeNow, dateTimeNow.AddDays(5), c))
-                                        .Select(s => s.MapConferenceResponse())
-                                        .ToListAsync();
+            return await _conferencesRepository
+                            .GetAll()
+                            .Where(c => IsConferenceWithinDateRange(dateTimeNow, dateTimeNow.AddDays(5), c))
+                            .Select(s => s.MapConferenceResponse())
+                            .ToListAsync();
         }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ConferenceResponse>> GetConference(int id)
         {
-            var conference = await _db.FindAsync<Data.Conference>(id);
+            var conference = await _conferencesRepository.GetByIdAsync(id);
 
             if (conference == null)
             {
                 return NotFound();
             }
 
-            var result = new ConferenceResponse
-            {
-                ID = conference.ID,
-                Name = conference.Name,
-                StartTime = conference.StartTime,
-                EndTime = conference.EndTime,
-                Url = conference.Url
-            };
-
-            return result;
+            return conference.MapConferenceResponse();
         }
 
         [HttpPost("upload")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UploadConference([Required, FromForm]string conferenceName, [FromForm]ConferenceFormat format, IFormFile file)
+        public async Task<IActionResult> UploadConference([Required, FromForm] string conferenceName, [FromForm] ConferenceFormat format, IFormFile file)
         {
             var loader = GetLoader(format);
 
             using (var stream = file.OpenReadStream())
             {
-                await loader.LoadDataAsync(conferenceName, stream, _db);
-            }
+                var conference = await loader.LoadDataAsync(conferenceName, stream);
 
-            await _db.SaveChangesAsync();
+                await _conferencesRepository.AddAsync(conference);
+            }
 
             return Ok();
         }
@@ -83,36 +76,24 @@ namespace BackEnd.Controllers
         [HttpPost]
         public async Task<ActionResult<ConferenceResponse>> CreateConference(ConferenceDTO.Conference input)
         {
-            var conference = new Data.Conference
+            var conference = await _conferencesRepository.AddAsync(new Data.Conference
             {
                 Name = input.Name
-            };
+            });
 
-            _db.Conferences.Add(conference);
-            await _db.SaveChangesAsync();
-
-            var result = new ConferenceResponse
-            {
-                ID = conference.ID,
-                Name = conference.Name
-            };
-
-            return CreatedAtAction(nameof(GetConference), new { id = conference.ID }, result);
+            return CreatedAtAction(nameof(GetConference),
+                new { id = conference.ID }, conference.MapConferenceResponse());
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> PutConference(int id, ConferenceDTO.Conference input)
+        public async Task<IActionResult> PutConference(int id, ConferenceRequest input)
         {
-            var conference = await _db.FindAsync<Data.Conference>(id);
+            var conference = await _conferencesRepository.UpdateAsync(input.MapConference());
 
             if (conference == null)
             {
                 return NotFound();
             }
-
-            conference.Name = input.Name;
-
-            await _db.SaveChangesAsync();
 
             return NoContent();
         }
@@ -120,16 +101,7 @@ namespace BackEnd.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ConferenceResponse>> DeleteConference(int id)
         {
-            var conference = await _db.FindAsync<Data.Conference>(id);
-
-            if (conference == null)
-            {
-                return NotFound();
-            }
-
-            _db.Remove(conference);
-
-            await _db.SaveChangesAsync();
+            var conference = await _conferencesRepository.DeleteByIdAsync(id);
 
             return conference.MapConferenceResponse();
         }

@@ -5,7 +5,7 @@ namespace BackEnd.Data
 {
     public abstract class DataLoader
     {
-        public abstract Task LoadDataAsync(string conferenceName, Stream fileStream, ApplicationDbContext db);
+        public abstract Task<Conference> LoadDataAsync(string conferenceName, Stream fileStream);
     }
 
 }

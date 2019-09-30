@@ -1,5 +1,6 @@
 ﻿using ConferenceDTO;
 using ConferencePlanner.Tests.WebApplicationFactories;
+using Microsoft.AspNetCore.Mvc.Testing;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -19,7 +20,10 @@ namespace ConferencePlanner.Tests.IntegrationTests
         [Fact]
         public async Task GetSessionsAsyncSuccess()
         {
-            var _httpClient = Factory.CreateClient();
+            var _httpClient = Factory.CreateClient(new WebApplicationFactoryClientOptions
+            {
+                AllowAutoRedirect = false
+            });
 
             var response = await _httpClient.GetAsync("/api/sessions");
 
