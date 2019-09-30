@@ -10,7 +10,7 @@
 
 <form method="post">
     <div asp-validation-summary="All" class="text-danger"></div>
-    <input asp-for="Track.ConferenceId" value="@Model.ConferenceId" type="hidden"/>
+    <input asp-for="Track.ConferenceId" value="@Model.ConferenceId" type="hidden" />
     <div class="form-group">
         <label asp-for="Track.Name" class="control-label"></label>
         <div class="row">
@@ -26,5 +26,8 @@
         </div>
     </div>
 </form>
-<partial name="_ValidationScriptsPartial" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
 
