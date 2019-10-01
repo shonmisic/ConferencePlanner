@@ -73,7 +73,7 @@ namespace BackEnd
         }
 
         // PUT: api/Speakers/5
-        [HttpPut("{username:string}")]
+        [HttpPut("{username}")]
         public async Task<IActionResult> PutAttendee(string username, Attendee input)
         {
             try

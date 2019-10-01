@@ -1,7 +1,7 @@
 ﻿using ConferenceDTO;
 using FrontEnd.Infrastructure;
-using FrontEnd.Models;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -254,9 +254,14 @@ namespace FrontEnd.Services
         {
             if (!_cache.TryGetValue(_getConferences, out IEnumerable<ConferenceResponse> conferences))
             {
-                var response = await _httpClient.GetAsync($"{_conferencesUri}/5-days");
+                var response = await _httpClient.SendAsync(CreateRequest());
 
                 response.EnsureSuccessStatusCode();
+
+        //        using (var contentStream = await response.Content.ReadAsStreamAsync())
+        //{
+        //    conferences = await JsonConvert.DeserializeObject<List<ConferenceResponse>>(contentStream);
+        //}
 
                 conferences = await response.Content.ReadAsJsonAsync<IEnumerable<ConferenceResponse>>();
 
@@ -264,6 +269,11 @@ namespace FrontEnd.Services
             }
 
             return conferences;
+        }
+
+        private static HttpRequestMessage CreateRequest()
+        {
+            return new HttpRequestMessage(HttpMethod.Get, $"{_conferencesUri}/5-days");
         }
 
         public async Task<ICollection<ConferenceResponse>> GetAllConferencesAsync()

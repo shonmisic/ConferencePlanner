@@ -37,16 +37,14 @@ namespace BackEnd
                     .AddXmlDataContractSerializerFormatters()
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddSwaggerGen(options =>
-                options.SwaggerDoc("v1", new Info { Title = "Conference Planner API", Version = "v1" })
-            );
-
             services.AddHealthChecks()
                 .AddDbContextCheck<ApplicationDbContext>();
 
             services.AddTransient<IAttendeesRepository, AttendeesRepository>();
             services.AddTransient<ISessionsRepository, SessionsRepository>();
+            services.AddTransient<ISpeakersRepository, SpeakersRepository>();
             services.AddTransient<IImagesRepository, ImagesRepository>();
+            services.AddTransient<IConferencesRepository, ConferencesRepository>();
             services.AddTransient<ITracksRepository, TracksRepository>();
 
             if (Environment.IsDevelopment())
@@ -62,6 +60,10 @@ namespace BackEnd
                     options.TableName = "ConferenceDistCache";
                 });
             }
+
+            services.AddSwaggerGen(options =>
+                options.SwaggerDoc("v1", new Info { Title = "Conference Planner API", Version = "v1" })
+            );
         }
 
         // We have to override this method in our TestStartup, because we want to inject our custom database services
@@ -117,14 +119,16 @@ namespace BackEnd
                 await next();
             });
 
+            app.UseHttpsRedirection();
+
+            app.UseHealthChecks("/health");
+
             app.UseSwagger();
 
             app.UseSwaggerUI(options =>
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "Conference Planner API v1")
             );
 
-            app.UseHealthChecks("/health");
-            app.UseHttpsRedirection();
             app.UseMvc();
 
             app.Run(context =>

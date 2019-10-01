@@ -50,6 +50,7 @@ namespace FrontEnd
             {
                 client.BaseAddress = new Uri(Configuration["ServiceUrl"]);
             });
+            services.AddSingleton<IApiClientFactory, ApiClientFactory>();
             //.AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
             //{
             //    TimeSpan.FromSeconds(1),

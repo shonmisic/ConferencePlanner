@@ -20,10 +20,7 @@ namespace ConferencePlanner.Tests.IntegrationTests
         [Fact]
         public async Task GetSessionsAsyncSuccess()
         {
-            var _httpClient = Factory.CreateClient(new WebApplicationFactoryClientOptions
-            {
-                AllowAutoRedirect = false
-            });
+            var _httpClient = Factory.CreateClient();
 
             var response = await _httpClient.GetAsync("/api/sessions");
 

@@ -12,10 +12,18 @@
     </div>
 }
 
+@if (!Model.AreThereAnyConferences)
+{
+    <div class="alert alert-success alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        There are no conferences in the following 5 days
+    </div>
+}
+
 <div class="agenda">
     <div class="row">
         <div class="col">
-            <a asp-page="/Admin/CreateConference">Create new conference</a>
+            <a authz-policy="Admin" asp-page="/Admin/CreateConference">Create new conference</a>
         </div>
     </div>
     <form authz="true" method="post">

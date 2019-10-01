@@ -32,7 +32,7 @@ namespace BackEnd.Controllers
                                                .ToListAsync();
         }
 
-        [HttpGet("/5-days")]
+        [HttpGet("5-days")]
         public async Task<ActionResult<List<ConferenceResponse>>> GetConferencesForFollowingFiveDays()
         {
             var dateTimeNow = DateTimeOffset.Now;

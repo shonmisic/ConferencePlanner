@@ -33,6 +33,8 @@ namespace FrontEnd.Pages
         public string Message { get; set; }
         public bool ShowMessage => !string.IsNullOrEmpty(Message);
 
+        public bool AreThereAnyConferences {get;set;}
+
         public async Task OnGet(int id = 0, int day = 0)
         {
             _logger.LogDebug("OnGet was called");
@@ -42,6 +44,8 @@ namespace FrontEnd.Pages
             CurrentDayOffset = day;
 
             Conferences = await _apiClient.GetConferencesForFollowingFiveDays();
+
+            AreThereAnyConferences = Conferences.Any();
 
             SelectedConference = Conferences.SingleOrDefault(c => c.ID == id);
 

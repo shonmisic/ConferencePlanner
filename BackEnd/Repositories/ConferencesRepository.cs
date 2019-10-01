@@ -41,7 +41,12 @@ namespace BackEnd.Repositories
 
         public IQueryable<Conference> GetAll(CancellationToken cancellationToken = default(CancellationToken))
         {
-            return _dbContext.Conferences.AsNoTracking();
+            return _dbContext.Conferences.AsNoTracking()
+                                        .Include(c => c.ConferenceAttendees)
+                                            .ThenInclude(ca => ca.Attendee)
+                                        .Include(c => c.Sessions)
+                                        .Include(c => c.Speakers)
+                                        .Include(c => c.Tracks);
         }
 
         public async Task<Conference> GetByIdAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
