@@ -11,5 +11,7 @@ namespace ConferenceDTO
         public ICollection<Speaker> Speakers { get; set; } = new List<Speaker>();
 
         public ICollection<Tag> Tags { get; set; } = new List<Tag>();
+        
+        public ICollection<Attendee> Attendees { get; set; } = new List<Attendee>();
     }
 }

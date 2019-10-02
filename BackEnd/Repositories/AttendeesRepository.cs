@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BackEnd.Data;
@@ -17,14 +18,22 @@ namespace BackEnd.Repositories
 
         public async Task<Attendee> GetByUsernameAsync(string username, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return await _dbContext.Attendees.AsNoTracking()
-                                             .Include(a => a.SessionAttendees)
-                                                .ThenInclude(sa => sa.Session)
-                                             .Include(a => a.ConferenceAttendees)
-                                                .ThenInclude(ca => ca.Conference)
-                                             .Include(a => a.AttendeeImages)
-                                                .ThenInclude(ai => ai.Image)
-                                             .SingleOrDefaultAsync(a => a.UserName == username);
+            try
+            {
+                return await _dbContext.Attendees.AsNoTracking()
+                                                     .Include(a => a.SessionAttendees)
+                                                        .ThenInclude(sa => sa.Session)
+                                                     .Include(a => a.ConferenceAttendees)
+                                                        .ThenInclude(ca => ca.Conference)
+                                                     .Include(a => a.AttendeeImages)
+                                                        .ThenInclude(ai => ai.Image)
+                                                     .SingleOrDefaultAsync(a => a.UserName == username);
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
         }
 
         public async Task<Attendee> AddAsync(Attendee attendee, CancellationToken cancellationToken = default(CancellationToken))

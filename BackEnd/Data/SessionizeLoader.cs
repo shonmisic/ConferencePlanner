@@ -41,7 +41,11 @@ namespace BackEnd.Data
                             if (!addedSpeakers.ContainsKey(speaker.name))
                             {
                                 var thisSpeaker = new Speaker { Name = speaker.name };
-                                conference.Speakers.Add(thisSpeaker);
+                                conference.ConferenceSpeakers.Add(new ConferenceSpeaker
+                                {
+                                    Conference = conference,
+                                    Speaker = thisSpeaker
+                                });
                                 addedSpeakers.Add(thisSpeaker.Name, thisSpeaker);
                             }
                         }
@@ -80,6 +84,9 @@ namespace BackEnd.Data
                     }
                 }
             }
+
+            conference.StartTime = conference.Sessions.Min(s => s.StartTime);
+            conference.EndTime = conference.Sessions.Max(s => s.EndTime);
 
             return conference;
         }

@@ -8,7 +8,6 @@ namespace ConferenceDTO
     {
         public int ID { get; set; }
 
-        [Required]
         public int ConferenceId { get; set; }
 
         [Required]

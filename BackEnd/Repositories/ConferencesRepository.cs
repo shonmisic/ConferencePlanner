@@ -33,7 +33,15 @@ namespace BackEnd.Repositories
             {
                 _dbContext.Remove(conference);
 
-                await _dbContext.SaveChangesAsync();
+                try
+                {
+                    await _dbContext.SaveChangesAsync();
+                }
+                catch (System.Exception e)
+                {
+
+                    throw;
+                }
             }
 
             return conference;
@@ -45,7 +53,8 @@ namespace BackEnd.Repositories
                                         .Include(c => c.ConferenceAttendees)
                                             .ThenInclude(ca => ca.Attendee)
                                         .Include(c => c.Sessions)
-                                        .Include(c => c.Speakers)
+                                        .Include(c => c.ConferenceSpeakers)
+                                            .ThenInclude(ca => ca.Speaker)
                                         .Include(c => c.Tracks);
         }
 

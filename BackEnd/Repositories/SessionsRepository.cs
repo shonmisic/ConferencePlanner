@@ -24,7 +24,9 @@ namespace BackEnd.Repositories
                                             .ThenInclude(ss => ss.Speaker)
                                         .Include(s => s.Track)
                                         .Include(s => s.SessionTags)
-                                            .ThenInclude(ss => ss.Tag);
+                                            .ThenInclude(ss => ss.Tag)
+                                        .Include(s => s.SessionAttendees)
+                                            .ThenInclude(s => s.Attendee);
         }
 
         public async Task<Session> GetByIdAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
@@ -35,6 +37,8 @@ namespace BackEnd.Repositories
                                                .ThenInclude(ss => ss.Speaker)
                                             .Include(s => s.SessionTags)
                                                .ThenInclude(st => st.Tag)
+                                            .Include(s => s.SessionAttendees)
+                                                .ThenInclude(s => s.Attendee)
                                             .SingleOrDefaultAsync(s => s.ID == id);
         }
 
@@ -46,6 +50,8 @@ namespace BackEnd.Repositories
                                                .ThenInclude(ss => ss.Speaker)
                                             .Include(s => s.SessionTags)
                                                .ThenInclude(st => st.Tag)
+                                            .Include(s => s.SessionAttendees)
+                                                .ThenInclude(s => s.Attendee)
                                             .Where(s => s.ConferenceId == conferenceId)
                                             .ToListAsync();
         }

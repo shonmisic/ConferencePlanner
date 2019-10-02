@@ -1,4 +1,5 @@
 ﻿using BackEnd.Data;
+using BackEnd.Infrastructure;
 using BackEnd.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
+using Serilog;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.Runtime.InteropServices;
@@ -85,7 +87,7 @@ namespace BackEnd
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env, ILogger logger)
         {
             if (env.IsDevelopment())
             {
@@ -118,6 +120,8 @@ namespace BackEnd
 
                 await next();
             });
+
+            app.ConfigureExceptionHandler(logger);
 
             app.UseHttpsRedirection();
 

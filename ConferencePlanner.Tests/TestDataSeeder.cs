@@ -18,6 +18,10 @@ namespace ConferencePlanner.Tests
 
         public void SeedToDoItems()
         {
+            _context.Attendees.Add(new Attendee
+            {
+                ID = 1
+            });
             _context.Conferences.Add(new Conference
             {
                 ID = 1
@@ -54,14 +58,22 @@ namespace ConferencePlanner.Tests
                     }
                 },
                 SessionTags = new List<SessionTag>
-            {
-                new SessionTag
                 {
-                    SessionId = 1,
-                    TagId = 1
-                }
-            },
+                    new SessionTag
+                    {
+                        SessionId = 1,
+                        TagId = 1
+                    }
+                },
                 TrackId = 1,
+                SessionAttendees = new List<SessionAttendee>
+                {
+                    new SessionAttendee
+                    {
+                        SessionId = 1,
+                        AttendeeId = 1
+                    }
+                }
             });
 
             _context.SaveChanges();

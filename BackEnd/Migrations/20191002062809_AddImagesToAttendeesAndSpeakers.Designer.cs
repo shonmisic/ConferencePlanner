@@ -4,14 +4,16 @@ using BackEnd.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BackEnd.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191002062809_AddImagesToAttendeesAndSpeakers")]
+    partial class AddImagesToAttendeesAndSpeakers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -96,19 +98,6 @@ namespace BackEnd.Migrations
                     b.HasIndex("AttendeeId");
 
                     b.ToTable("ConferenceAttendee");
-                });
-
-            modelBuilder.Entity("BackEnd.Data.ConferenceSpeaker", b =>
-                {
-                    b.Property<int>("ConferenceId");
-
-                    b.Property<int>("SpeakerId");
-
-                    b.HasKey("ConferenceId", "SpeakerId");
-
-                    b.HasIndex("SpeakerId");
-
-                    b.ToTable("ConferenceSpeaker");
                 });
 
             modelBuilder.Entity("BackEnd.Data.Image", b =>
@@ -216,6 +205,8 @@ namespace BackEnd.Migrations
                     b.Property<string>("Bio")
                         .HasMaxLength(4000);
 
+                    b.Property<int?>("ConferenceID");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200);
@@ -224,6 +215,8 @@ namespace BackEnd.Migrations
                         .HasMaxLength(1000);
 
                     b.HasKey("ID");
+
+                    b.HasIndex("ConferenceID");
 
                     b.ToTable("Speakers");
                 });
@@ -301,19 +294,6 @@ namespace BackEnd.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("BackEnd.Data.ConferenceSpeaker", b =>
-                {
-                    b.HasOne("BackEnd.Data.Conference", "Conference")
-                        .WithMany("ConferenceSpeakers")
-                        .HasForeignKey("ConferenceId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("BackEnd.Data.Speaker", "Speaker")
-                        .WithMany("ConferenceSpeakers")
-                        .HasForeignKey("SpeakerId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("BackEnd.Data.Session", b =>
                 {
                     b.HasOne("BackEnd.Data.Conference", "Conference")
@@ -334,7 +314,7 @@ namespace BackEnd.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BackEnd.Data.Session", "Session")
-                        .WithMany("SessionAttendees")
+                        .WithMany()
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -363,6 +343,13 @@ namespace BackEnd.Migrations
                         .WithMany("SessionTags")
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("BackEnd.Data.Speaker", b =>
+                {
+                    b.HasOne("BackEnd.Data.Conference")
+                        .WithMany("Speakers")
+                        .HasForeignKey("ConferenceID");
                 });
 
             modelBuilder.Entity("BackEnd.Data.SpeakerImage", b =>
