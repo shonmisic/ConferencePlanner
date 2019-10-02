@@ -20,6 +20,7 @@ namespace FrontEnd.Services
         Task CreateSpeakerAsync(SpeakerRequest speaker);
         Task DeleteSpeakerAsync(int id);
         Task<ICollection<SessionResponse>> GetSessionsByAttendeeAsync(string name, int conferenceId);
+        Task<ICollection<SessionResponse>> GetSessionsByTrackAsync(int trackId);
         Task<ICollection<ConferenceResponse>> GetAllConferencesAsync();
         Task AddSessionToAttendeeAsync(string name, int sessionId);
         Task RemoveSessionFromAttendeeAsync(string name, int sessionId);

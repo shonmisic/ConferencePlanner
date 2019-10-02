@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Serilog;
 using Swashbuckle.AspNetCore.Swagger;
@@ -87,7 +88,7 @@ namespace BackEnd
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env, ILogger logger)
+        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -121,7 +122,7 @@ namespace BackEnd
                 await next();
             });
 
-            app.ConfigureExceptionHandler(logger);
+            app.ConfigureExceptionHandler(loggerFactory.CreateLogger<Startup>());
 
             app.UseHttpsRedirection();
 

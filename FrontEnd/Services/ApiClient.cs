@@ -379,6 +379,15 @@ namespace FrontEnd.Services
             response.EnsureSuccessStatusCode();
         }
 
+        public async Task<ICollection<SessionResponse>> GetSessionsByTrackAsync(int trackId)
+        {
+            var response = await _httpClient.GetAsync($"{_sessionsUri}/track/{trackId}");
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsJsonAsync<ICollection<SessionResponse>>();
+        }
+
         private static MemoryCacheEntryOptions GetCacheEntryOptions()
         {
             return new MemoryCacheEntryOptions()

@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using ConferenceDTO;
+﻿using ConferenceDTO;
 using FrontEnd.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace FrontEnd.Pages
 {
@@ -22,7 +22,7 @@ namespace FrontEnd.Pages
             _logger = logger;
         }
 
-        public IEnumerable<ConferenceResponse> Conferences {get;set;}
+        public IEnumerable<ConferenceResponse> Conferences { get; set; }
         public ConferenceResponse SelectedConference { get; set; }
         public IEnumerable<IGrouping<DateTimeOffset?, SessionResponse>> Sessions { get; set; }
         public IEnumerable<(int Offset, DayOfWeek? DayOfWeek)> DayOffsets { get; set; }
@@ -33,7 +33,7 @@ namespace FrontEnd.Pages
         public string Message { get; set; }
         public bool ShowMessage => !string.IsNullOrEmpty(Message);
 
-        public bool AreThereAnyConferences {get;set;}
+        public bool AreThereAnyConferences { get; set; }
 
         public async Task OnGet(int id = 0, int day = 0)
         {

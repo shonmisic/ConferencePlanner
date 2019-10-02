@@ -17,7 +17,9 @@
             <div class="col-md-3 mb-4">
                 <div class="card shadow track h-100">
                     <div class="card-body">
-                        <h5 class="card-title">@track.Name</h5>
+                        <h5 class="card-title">
+                            <a asp-route-id="@track.ID" asp-route-conferenceId="@Model.Conference.ID">@track.Name</a>
+                        </h5>
                     </div>
                     <div class="card-footer">
                         <input type="hidden" name="id" value="@track.ID" />
@@ -27,5 +29,11 @@
             </div>
         }
     </div>
+
+    @if (Model.Sessions != null)
+    {
+        @await Html.PartialAsync("_SessionsPartial", Model.Sessions)
+    }
+
 </form>
 

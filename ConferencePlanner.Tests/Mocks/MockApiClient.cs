@@ -250,5 +250,10 @@ namespace ConferencePlanner.Tests.Mocks
         {
             throw new NotImplementedException();
         }
+
+        public Task<ICollection<SessionResponse>> GetSessionsByTrackAsync(int trackId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

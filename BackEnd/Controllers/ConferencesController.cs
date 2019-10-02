@@ -5,6 +5,7 @@ using ConferenceDTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -18,10 +19,12 @@ namespace BackEnd.Controllers
     public class ConferencesController : ControllerBase
     {
         private readonly IConferencesRepository _conferencesRepository;
+        private readonly ILogger<ConferencesController> _logger;
 
-        public ConferencesController(IConferencesRepository conferencesRepository)
+        public ConferencesController(IConferencesRepository conferencesRepository, ILogger<ConferencesController> logger)
         {
             _conferencesRepository = conferencesRepository;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -35,6 +38,8 @@ namespace BackEnd.Controllers
         [HttpGet("5-days")]
         public async Task<ActionResult<List<ConferenceResponse>>> GetConferencesForFollowingFiveDays()
         {
+            _logger.LogDebug($"{nameof(GetConferencesForFollowingFiveDays)} was called");
+
             var dateTimeNow = DateTimeOffset.Now;
 
             return await _conferencesRepository
