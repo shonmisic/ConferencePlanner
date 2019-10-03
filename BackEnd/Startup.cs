@@ -34,7 +34,7 @@ namespace BackEnd
         {
             ConfigureDatabaseServices(services);
 
-            services.AddResponseCaching();
+            //services.AddResponseCaching();
 
             services.AddMvc()
                     .AddXmlDataContractSerializerFormatters()
@@ -106,21 +106,21 @@ namespace BackEnd
                 context.Database.EnsureCreated();
             }
 
-            app.UseResponseCaching();
+            //app.UseResponseCaching();
 
-            app.Use(async (context, next) =>
-            {
-                context.Response.GetTypedHeaders().CacheControl =
-                    new CacheControlHeaderValue
-                    {
-                        Public = true,
-                        MaxAge = TimeSpan.FromSeconds(10)
-                    };
-                context.Response.Headers[HeaderNames.Vary] =
-                    new string[] { "Accept-Encoding" };
+            //app.Use(async (context, next) =>
+            //{
+            //    context.Response.GetTypedHeaders().CacheControl =
+            //        new CacheControlHeaderValue
+            //        {
+            //            Public = true,
+            //            MaxAge = TimeSpan.FromSeconds(10)
+            //        };
+            //    context.Response.Headers[HeaderNames.Vary] =
+            //        new string[] { "Accept-Encoding" };
 
-                await next();
-            });
+            //    await next();
+            //});
 
             app.ConfigureExceptionHandler(loggerFactory.CreateLogger<Startup>());
 

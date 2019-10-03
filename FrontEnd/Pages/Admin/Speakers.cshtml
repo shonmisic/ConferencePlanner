@@ -24,8 +24,7 @@
                     </div>
                     <div class="card-footer">
                         <div class="card-link">@speaker.WebSite</div>
-                        <input type="hidden" name="id" value="@speaker.ID" />
-                        <button type="submit" asp-page-handler="Remove" class="btn btn-danger btn-sm">Delete Speaker</button>
+                        <button type="submit" asp-page-handler="Remove" asp-route-id="@speaker.ID" class="btn btn-danger btn-sm">Delete Speaker</button>
                     </div>
                 </div>
             </div>

@@ -1,6 +1,7 @@
-﻿using System.Threading;
+﻿using BackEnd.Data;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using BackEnd.Data;
 
 namespace BackEnd.Repositories
 {
@@ -11,5 +12,6 @@ namespace BackEnd.Repositories
         Task<Attendee> AddSessionAsync(string username, int sessionId, CancellationToken cancellationToken = default(CancellationToken));
         Task<bool> RemoveSessionAsync(string username, int sessionId, CancellationToken cancellationToken = default(CancellationToken));
         Task UpdateAsync(CancellationToken cancellationToken = default(CancellationToken));
+        IQueryable<Attendee> GetAll();
     }
 }

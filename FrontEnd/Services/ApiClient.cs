@@ -1,7 +1,6 @@
 ﻿using ConferenceDTO;
 using FrontEnd.Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -147,7 +146,7 @@ namespace FrontEnd.Services
 
                 speaker = await response.Content.ReadAsJsonAsync<SpeakerResponse>();
 
-                _cache.Set(_getSpeakersKey, speaker, GetCacheEntryOptions());
+                _cache.Set($"{_getSpeakersKey}/{id}", speaker, GetCacheEntryOptions());
             }
 
             return speaker;
@@ -198,7 +197,7 @@ namespace FrontEnd.Services
 
                 searchResults = await response.Content.ReadAsJsonAsync<ICollection<SearchResult>>();
 
-                _cache.Set(_getSearchResults, searchResults, GetCacheEntryOptions());
+                _cache.Set($"{_getSearchResults}/{query}", searchResults, GetCacheEntryOptions());
             }
 
             return searchResults;
@@ -243,7 +242,7 @@ namespace FrontEnd.Services
 
         public async Task<ICollection<TrackResponse>> GetTracks(int conferenceId)
         {
-            var response = await _httpClient.GetAsync($"{_tracksUri}/{conferenceId}");
+            var response = await _httpClient.GetAsync($"{_tracksUri}/conference/{conferenceId}");
 
             response.EnsureSuccessStatusCode();
 
@@ -252,23 +251,23 @@ namespace FrontEnd.Services
 
         public async Task<IEnumerable<ConferenceResponse>> GetConferencesForFollowingFiveDays()
         {
-            if (!_cache.TryGetValue(_getConferences, out IEnumerable<ConferenceResponse> conferences))
-            {
+            //if (!_cache.TryGetValue(_getConferences, out IEnumerable<ConferenceResponse> conferences))
+            //{
                 var response = await _httpClient.SendAsync(CreateRequest());
 
                 response.EnsureSuccessStatusCode();
 
-        //        using (var contentStream = await response.Content.ReadAsStreamAsync())
-        //{
-        //    conferences = await JsonConvert.DeserializeObject<List<ConferenceResponse>>(contentStream);
-        //}
+                //        using (var contentStream = await response.Content.ReadAsStreamAsync())
+                //{
+                //    conferences = await JsonConvert.DeserializeObject<List<ConferenceResponse>>(contentStream);
+                //}
 
-                conferences = await response.Content.ReadAsJsonAsync<IEnumerable<ConferenceResponse>>();
+                return await response.Content.ReadAsJsonAsync<IEnumerable<ConferenceResponse>>();
 
-                _cache.Set(_getConferences, conferences, GetCacheEntryOptions());
-            }
+            //    _cache.Set(_getConferences, conferences, GetCacheEntryOptions());
+            //}
 
-            return conferences;
+            //return conferences;
         }
 
         private static HttpRequestMessage CreateRequest()
@@ -287,19 +286,13 @@ namespace FrontEnd.Services
 
         public async Task<ConferenceResponse> GetConference(int conferenceId)
         {
-            if (!_cache.TryGetValue($"{_getConferences}/{conferenceId}", out ConferenceResponse conference))
-            {
-                var response = await _httpClient.GetAsync($"{_conferencesUri}/{conferenceId}");
+            var response = await _httpClient.GetAsync($"{_conferencesUri}/{conferenceId}");
 
-                response.EnsureSuccessStatusCode();
+            response.EnsureSuccessStatusCode();
 
-                conference = await response.Content.ReadAsJsonAsync<ConferenceResponse>();
-
-                _cache.Set(_getConferences, conference, GetCacheEntryOptions());
-            }
-
-            return conference;
+            return await response.Content.ReadAsJsonAsync<ConferenceResponse>();
         }
+
         public async Task DeleteTrackAsync(int id)
         {
             var response = await _httpClient.DeleteAsync($"{_tracksUri}/{id}");
@@ -342,13 +335,13 @@ namespace FrontEnd.Services
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task<ICollection<AttendeeResponse>> GetAllAttendeesAsync()
+        public async Task<IEnumerable<AttendeeResponse>> GetAllAttendeesAsync()
         {
             var response = await _httpClient.GetAsync(_attendeesUri);
 
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsJsonAsync<ICollection<AttendeeResponse>>();
+            return await response.Content.ReadAsJsonAsync<IEnumerable<AttendeeResponse>>();
         }
 
         public async Task DeleteAttendeeAsync(string username)
@@ -392,7 +385,7 @@ namespace FrontEnd.Services
         {
             return new MemoryCacheEntryOptions()
               .SetSize(102400)
-              .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+              .SetSlidingExpiration(TimeSpan.FromSeconds(5));
         }
     }
 }

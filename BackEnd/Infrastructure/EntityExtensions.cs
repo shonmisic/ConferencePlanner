@@ -19,7 +19,7 @@ namespace BackEnd.Infrastructure
                 StartTime = conference.StartTime,
                 EndTime = conference.EndTime,
                 Sessions = conference.Sessions.Select(s => s.MapSession()).ToList(),
-                Tracks = conference.Tracks.Select(t => t.MapTrack()).ToList()
+                Tracks = conference.Tracks.Select(t => t.MapTrack()).ToList(),
             };
 
             newConference.ConferenceAttendees = conference.Attendees?
@@ -29,16 +29,6 @@ namespace BackEnd.Infrastructure
                                                         ConferenceId = newConference.ID,
                                                         AttendeeId = a.ID,
                                                         Attendee = a.MapAttendee()
-                                                    })
-                                                    .ToList();
-
-            newConference.ConferenceSpeakers = conference.Speakers?
-                                                    .Select(s => new ConferenceSpeaker
-                                                    {
-                                                        Conference = newConference,
-                                                        ConferenceId = newConference.ID,
-                                                        Speaker = s.MapSpeaker(),
-                                                        SpeakerId = s.ID
                                                     })
                                                     .ToList();
 
@@ -105,6 +95,7 @@ namespace BackEnd.Infrastructure
                                    .Select(sa => new ConferenceDTO.Attendee
                                    {
                                        ID = sa.AttendeeId,
+                                       UserName = sa.Attendee.UserName,
                                        FirstName = sa.Attendee.FirstName,
                                        LastName = sa.Attendee.LastName,
                                        EmailAddress = sa.Attendee.EmailAddress
@@ -183,15 +174,6 @@ namespace BackEnd.Infrastructure
                             Url = CreateSessionUrl(sa.SessionId)
                         })
                     .ToList(),
-                Conferences = attendee.ConferenceAttendees?
-                    .Select(ca =>
-                        new ConferenceDTO.Conference
-                        {
-                            ID = ca.Conference.ID,
-                            Name = ca.Conference.Name,
-                            Url = CreateConferenceUrl(ca.ConferenceId)
-                        })
-                    .ToList(),
                 Images = attendee.AttendeeImages?
                     .Select(ai =>
                         new ConferenceDTO.Image
@@ -253,7 +235,7 @@ namespace BackEnd.Infrastructure
                 EndTime = conference.EndTime,
                 Url = CreateConferenceUrl(conference.ID),
                 Sessions = conference.Sessions.Select(s => s.MapSession()).ToList(),
-                Speakers = conference.ConferenceSpeakers.Select(cs => cs.Speaker.MapSpeaker()).ToList(),
+                Speakers = conference.Sessions.SelectMany(s => s.SessionSpeakers).Select(ss => ss.Speaker.MapSpeaker()).ToList(),
                 Tracks = conference.Tracks.Select(t => t.MapTrack()).ToList(),
                 Attendees = conference.ConferenceAttendees.Select(ca => ca.Attendee.MapAttendee()).ToList()
             };

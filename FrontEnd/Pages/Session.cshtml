@@ -3,7 +3,7 @@
 
 <ol class="breadcrumb">
     <li class="breadcrumb-item"><a asp-page="/Index">Agenda</a></li>
-    <li class="breadcrumb-item"><a asp-page="/Index" asp-route-day="@Model.DayOffset">Day @(Model.DayOffset + 1)</a></li>
+    <li class="breadcrumb-item"><a asp-page="/Index" asp-route-day="@Model.DayOffset" asp-route-conferenceId="@Model.Session.ConferenceId">Day @(Model.DayOffset + 1)</a></li>
     <li class="breadcrumb-item active">@Model.Session.Title</li>
 </ol>
 

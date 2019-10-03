@@ -221,7 +221,7 @@ namespace ConferencePlanner.Tests.Mocks
             throw new NotImplementedException();
         }
 
-        public Task<ICollection<AttendeeResponse>> GetAllAttendeesAsync()
+        public Task<IEnumerable<AttendeeResponse>> GetAllAttendeesAsync()
         {
             throw new NotImplementedException();
         }

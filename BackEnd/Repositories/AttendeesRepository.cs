@@ -1,9 +1,8 @@
-﻿using System;
+﻿using BackEnd.Data;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BackEnd.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Repositories
 {
@@ -16,31 +15,34 @@ namespace BackEnd.Repositories
             _dbContext = dbContext;
         }
 
+        public IQueryable<Attendee> GetAll()
+        {
+            return _dbContext.Attendees.AsNoTracking()
+                                       .Include(a => a.SessionAttendees)
+                                            .ThenInclude(sa => sa.Session)
+                                       .Include(a => a.ConferenceAttendees)
+                                            .ThenInclude(ca => ca.Conference)
+                                       .Include(a => a.AttendeeImages)
+                                            .ThenInclude(ai => ai.Image);
+        }
+
         public async Task<Attendee> GetByUsernameAsync(string username, CancellationToken cancellationToken = default(CancellationToken))
         {
-            try
-            {
-                return await _dbContext.Attendees.AsNoTracking()
-                                                     .Include(a => a.SessionAttendees)
-                                                        .ThenInclude(sa => sa.Session)
-                                                     .Include(a => a.ConferenceAttendees)
-                                                        .ThenInclude(ca => ca.Conference)
-                                                     .Include(a => a.AttendeeImages)
-                                                        .ThenInclude(ai => ai.Image)
-                                                     .SingleOrDefaultAsync(a => a.UserName == username);
-            }
-            catch (Exception e)
-            {
-
-                throw;
-            }
+            return await _dbContext.Attendees.AsNoTracking()
+                                            .Include(a => a.SessionAttendees)
+                                                .ThenInclude(sa => sa.Session)
+                                            .Include(a => a.ConferenceAttendees)
+                                                .ThenInclude(ca => ca.Conference)
+                                            .Include(a => a.AttendeeImages)
+                                                .ThenInclude(ai => ai.Image)
+                                            .SingleOrDefaultAsync(a => a.UserName == username);
         }
 
         public async Task<Attendee> AddAsync(Attendee attendee, CancellationToken cancellationToken = default(CancellationToken))
         {
             var newAttendee = _dbContext.Attendees.Add(attendee);
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             return newAttendee.Entity;
         }
@@ -48,36 +50,67 @@ namespace BackEnd.Repositories
         public async Task<Attendee> AddSessionAsync(string username, int sessionId, CancellationToken cancellationToken = default(CancellationToken))
         {
             var attendee = await _dbContext.Attendees.Include(a => a.SessionAttendees)
-                                                    .SingleOrDefaultAsync(a => a.UserName == username);
+                                                     .Include(a => a.ConferenceAttendees)
+                                                     .SingleOrDefaultAsync(a => a.UserName == username);
+
             var session = await _dbContext.Sessions.FindAsync(sessionId);
 
             attendee.SessionAttendees.Add(new SessionAttendee
             {
-                Attendee = attendee,
-                Session = session,
+                AttendeeId = attendee.ID,
+                SessionId = sessionId,
             });
 
-            await _dbContext.SaveChangesAsync();
+            if (!IsAttendingConference(attendee, session.ConferenceId))
+            {
+                attendee.ConferenceAttendees.Add(new ConferenceAttendee
+                {
+                    AttendeeId = attendee.ID,
+                    ConferenceId = session.ConferenceId
+                });
+            }
 
-            return attendee;
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return await GetByUsernameAsync(username);
         }
 
         public async Task<bool> RemoveSessionAsync(string username, int sessionId, CancellationToken cancellationToken = default(CancellationToken))
         {
             var attendee = await _dbContext.Attendees.Include(a => a.SessionAttendees)
+                                                        .ThenInclude(sa => sa.Session)
                                                     .SingleOrDefaultAsync(a => a.UserName == username);
+
             var sessionAttendee = attendee.SessionAttendees.SingleOrDefault(sa => sa.SessionId == sessionId);
 
             var success = attendee.SessionAttendees.Remove(sessionAttendee);
 
-            await _dbContext.SaveChangesAsync();
+            var conferenceId = sessionAttendee.Session.ConferenceId;
+            if (success && !DoesContainOtherSessionsFromTheSameConference(attendee, conferenceId))
+            {
+                var conferenceAttendee = attendee.ConferenceAttendees.SingleOrDefault(ca => ca.ConferenceId == conferenceId);
+
+                attendee.ConferenceAttendees.Remove(conferenceAttendee);
+            }
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             return success;
         }
 
         public async Task UpdateAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        private static bool IsAttendingConference(Attendee attendee, int conferenceId)
+        {
+            return attendee.ConferenceAttendees.Any(ca => ca.ConferenceId == conferenceId);
+        }
+
+        private static bool DoesContainOtherSessionsFromTheSameConference(Attendee attendee, int conferenceId)
+        {
+            return attendee.SessionAttendees.Select(sa => sa.Session).Any(s => s.ConferenceId == conferenceId);
         }
     }
 }

@@ -17,9 +17,9 @@ namespace BackEnd.Repositories
 
         public async Task<Speaker> AddAsync(Speaker speaker, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var entityEntry = await _dbContext.Speakers.AddAsync(speaker);
+            var entityEntry = await _dbContext.Speakers.AddAsync(speaker, cancellationToken);
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             return entityEntry.Entity;
         }
@@ -36,17 +36,17 @@ namespace BackEnd.Repositories
             return await _dbContext.Speakers.AsNoTracking()
                                             .Include(s => s.SessionSpeakers)
                                                 .ThenInclude(ss => ss.Session)
-                                            .SingleOrDefaultAsync(s => s.ID == id);
+                                            .SingleOrDefaultAsync(s => s.ID == id, cancellationToken);
         }
 
         public async Task<Speaker> RemoveAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var speaker = await _dbContext.FindAsync<Speaker>(id);
+            var speaker = await _dbContext.FindAsync<Speaker>(id, cancellationToken);
 
             if (speaker != null)
             {
                 _dbContext.Remove(speaker);
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync(cancellationToken);
             }
 
             return speaker;
@@ -54,7 +54,7 @@ namespace BackEnd.Repositories
 
         public async Task<Speaker> UpdateAsync(Speaker updatedSpeaker, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var speaker = await _dbContext.FindAsync<Speaker>(updatedSpeaker.ID);
+            var speaker = await _dbContext.FindAsync<Speaker>(updatedSpeaker.ID, cancellationToken);
 
             if (speaker != null)
             {
@@ -63,7 +63,7 @@ namespace BackEnd.Repositories
                 speaker.WebSite = updatedSpeaker.WebSite;
             }
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             return speaker;
         }

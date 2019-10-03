@@ -3,6 +3,7 @@ using FrontEnd.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace FrontEnd.Pages.Admin
@@ -16,7 +17,8 @@ namespace FrontEnd.Pages.Admin
             _apiClient = apiClient;
         }
 
-        public ICollection<AttendeeResponse> Attendees { get; set; }
+        public IEnumerable<AttendeeResponse> Attendees { get; set; }
+        public IEnumerable<ConferenceResponse> Conferences { get; set; }
 
         public async Task<IActionResult> OnGet()
         {
@@ -26,6 +28,10 @@ namespace FrontEnd.Pages.Admin
             {
                 return NotFound();
             }
+
+            Conferences = (await _apiClient.GetAllConferencesAsync())
+                                            .Where(c => Attendees.SelectMany(a => a.Sessions)
+                                                                .Any(s => s.ConferenceId == c.ID));
 
             return Page();
         }

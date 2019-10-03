@@ -83,7 +83,9 @@ namespace BackEnd.Controllers
         {
             var conference = await _conferencesRepository.AddAsync(new Data.Conference
             {
-                Name = input.Name
+                Name = input.Name,
+                StartTime= input.StartTime,
+                EndTime = input.EndTime,
             });
 
             return CreatedAtAction(nameof(GetConference),
@@ -124,10 +126,8 @@ namespace BackEnd.Controllers
         private static bool IsConferenceWithinDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate, Data.Conference s)
         {
             var startTime = s.StartTime ?? DateTimeOffset.MinValue;
-            var endTime = s.EndTime ?? DateTimeOffset.MaxValue;
 
-            return startTime.CompareTo(fromDate.Value) >= 0
-                && endTime.CompareTo(toDate.Value) <= 0;
+            return startTime.CompareTo(fromDate.Value) >= 0;
         }
 
         public enum ConferenceFormat

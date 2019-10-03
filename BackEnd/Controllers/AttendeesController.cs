@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using BackEnd.Infrastructure;
 using BackEnd.Repositories;
 using ConferenceDTO;
@@ -8,6 +5,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace BackEnd
 {
@@ -22,9 +23,9 @@ namespace BackEnd
 
         private static readonly string _getAttendee = "GetAttendee";
 
-        public AttendeesController(IAttendeesRepository attendeesRepository, 
-            ISessionsRepository sessionsRepository, 
-            IConferencesRepository conferencesRepository, 
+        public AttendeesController(IAttendeesRepository attendeesRepository,
+            ISessionsRepository sessionsRepository,
+            IConferencesRepository conferencesRepository,
             IDistributedCache cache)
         {
             _attendeesRepository = attendeesRepository;
@@ -33,8 +34,16 @@ namespace BackEnd
             _cache = cache;
         }
 
+        [HttpGet]
+        public async Task<ActionResult<ICollection<AttendeeResponse>>> GetAll()
+        {
+            return await _attendeesRepository.GetAll()
+                                            .Select(a => a.MapAttendeeResponse())
+                                            .ToListAsync();
+        }
+
         [HttpGet("{username}")]
-        public async Task<ActionResult<AttendeeResponse>> Get(string username)
+        public async Task<ActionResult<AttendeeResponse>> GetByUsername(string username)
         {
             var attendee = await _attendeesRepository.GetByUsernameAsync(username);
 
@@ -69,7 +78,7 @@ namespace BackEnd
 
             var result = attendee.MapAttendeeResponse();
 
-            return CreatedAtAction(nameof(Get), new { username = result.UserName }, result);
+            return CreatedAtAction(nameof(GetByUsername), result.UserName, result);
         }
 
         // PUT: api/Speakers/5
@@ -132,7 +141,15 @@ namespace BackEnd
 
             var newAttendee = await _attendeesRepository.AddSessionAsync(username, sessionId);
 
-            return newAttendee.MapAttendeeResponse();
+            try
+            {
+                return CreatedAtAction(nameof(GetByUsername), newAttendee.UserName, newAttendee.MapAttendeeResponse());
+            }
+            catch (Exception r)
+            {
+
+                throw;
+            }
         }
 
         [HttpDelete("{username}/session/{sessionId:int}")]
@@ -156,9 +173,7 @@ namespace BackEnd
                 return BadRequest();
             }
 
-            var success = attendee.SessionAttendees.Remove(sessionAttendee);
-
-            await _attendeesRepository.UpdateAsync();
+            await _attendeesRepository.RemoveSessionAsync(username, sessionId);
 
             return NoContent();
         }

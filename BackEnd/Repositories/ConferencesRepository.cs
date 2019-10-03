@@ -20,7 +20,7 @@ namespace BackEnd.Repositories
         {
             var newConference = await _dbContext.Conferences.AddAsync(conference);
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             return newConference.Entity;
         }
@@ -35,7 +35,7 @@ namespace BackEnd.Repositories
 
                 try
                 {
-                    await _dbContext.SaveChangesAsync();
+                    await _dbContext.SaveChangesAsync(cancellationToken);
                 }
                 catch (System.Exception e)
                 {
@@ -53,8 +53,6 @@ namespace BackEnd.Repositories
                                         .Include(c => c.ConferenceAttendees)
                                             .ThenInclude(ca => ca.Attendee)
                                         .Include(c => c.Sessions)
-                                        .Include(c => c.ConferenceSpeakers)
-                                            .ThenInclude(ca => ca.Speaker)
                                         .Include(c => c.Tracks);
         }
 
@@ -74,7 +72,7 @@ namespace BackEnd.Repositories
 
             _dbContext.Entry(conference).State = EntityState.Modified;
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             return conference;
         }

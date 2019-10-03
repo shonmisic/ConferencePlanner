@@ -98,19 +98,6 @@ namespace BackEnd.Migrations
                     b.ToTable("ConferenceAttendee");
                 });
 
-            modelBuilder.Entity("BackEnd.Data.ConferenceSpeaker", b =>
-                {
-                    b.Property<int>("ConferenceId");
-
-                    b.Property<int>("SpeakerId");
-
-                    b.HasKey("ConferenceId", "SpeakerId");
-
-                    b.HasIndex("SpeakerId");
-
-                    b.ToTable("ConferenceSpeaker");
-                });
-
             modelBuilder.Entity("BackEnd.Data.Image", b =>
                 {
                     b.Property<int>("ID")
@@ -298,19 +285,6 @@ namespace BackEnd.Migrations
                     b.HasOne("BackEnd.Data.Conference", "Conference")
                         .WithMany("ConferenceAttendees")
                         .HasForeignKey("ConferenceId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("BackEnd.Data.ConferenceSpeaker", b =>
-                {
-                    b.HasOne("BackEnd.Data.Conference", "Conference")
-                        .WithMany("ConferenceSpeakers")
-                        .HasForeignKey("ConferenceId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("BackEnd.Data.Speaker", "Speaker")
-                        .WithMany("ConferenceSpeakers")
-                        .HasForeignKey("SpeakerId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

@@ -50,13 +50,26 @@ namespace BackEnd.Controllers
         }
 
         [HttpGet("conference/{conferenceId:int}")]
-        public async Task<ActionResult<ICollection<SessionResponse>>> Get(int conferenceId, DateTimeOffset? fromDate = null,
+        public async Task<ActionResult<ICollection<SessionResponse>>> GetByConference(int conferenceId, DateTimeOffset? fromDate = null,
             DateTimeOffset? toDate = null)
         {
             fromDate = fromDate ?? DateTimeOffset.MinValue;
             toDate = toDate ?? DateTimeOffset.MaxValue;
 
-            var result = (await _sessionsRepository.GetByConferenceIdAsync(conferenceId))
+            return (await _sessionsRepository.GetByConferenceIdAsync(conferenceId))
+                            .Where(s => IsSessionWithinDateRange(fromDate, toDate, s))
+                            .Select(m => m.MapSessionResponse())
+                            .ToList();
+        }
+
+        [HttpGet("track/{trackId:int}")]
+        public async Task<ActionResult<ICollection<SessionResponse>>> GetByTrack(int trackId, DateTimeOffset? fromDate = null,
+            DateTimeOffset? toDate = null)
+        {
+            fromDate = fromDate ?? DateTimeOffset.MinValue;
+            toDate = toDate ?? DateTimeOffset.MaxValue;
+
+            var result = (await _sessionsRepository.GetByTrackIdAsync(trackId))
                             .Where(s => IsSessionWithinDateRange(fromDate, toDate, s))
                             .Select(m => m.MapSessionResponse())
                             .ToList();

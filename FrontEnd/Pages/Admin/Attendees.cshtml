@@ -16,15 +16,14 @@
                         <h5 class="card-title card-link"><a href="@attendee.Url">@attendee.FirstName @attendee.LastName</a></h5>
                     </div>
                     <div class="card-body">
-                        @foreach (var conference in attendee.Conferences)
+                        @foreach (var conference in Model.Conferences)
                         {
                             <div class="card-text">@conference.Name</div>
                         }
                     </div>
                     <div class="card-footer">
-                        <input type="hidden" name="username" value="@attendee.UserName" />
                         <p>@attendee.EmailAddress</p>
-                        <a asp-page-handler="Remove" class="btn btn-danger btn-sm">Delete</a>
+                        <a asp-page-handler="Remove" asp-route-username="@attendee.UserName" class="btn btn-danger btn-sm">Delete</a>
                         <a asp-page="/Admin/EditAttendee" asp-route-username="@attendee.UserName">Edit</a>
                     </div>
                 </div>

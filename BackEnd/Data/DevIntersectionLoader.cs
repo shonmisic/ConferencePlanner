@@ -30,10 +30,6 @@ namespace BackEnd
                     if (!speakerNames.ContainsKey(thisSpeakerName.Value<string>()))
                     {
                         var thisSpeaker = new Speaker { Name = thisSpeakerName.Value<string>() };
-                        conference.ConferenceSpeakers.Add(new ConferenceSpeaker{
-                            Conference = conference,
-                            Speaker = thisSpeaker
-                        });
                         speakerNames.Add(thisSpeakerName.Value<string>(), thisSpeaker);
                         Console.WriteLine(thisSpeakerName.Value<string>());
                     }

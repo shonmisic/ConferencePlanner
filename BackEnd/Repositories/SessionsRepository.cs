@@ -42,24 +42,38 @@ namespace BackEnd.Repositories
                                             .SingleOrDefaultAsync(s => s.ID == id);
         }
 
-        public async Task<ICollection<Session>> GetByConferenceIdAsync(int conferenceId, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IQueryable<Session>> GetByConferenceIdAsync(int conferenceId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return await _dbContext.Sessions.AsNoTracking()
-                                            .Include(s => s.Track)
-                                            .Include(s => s.SessionSpeakers)
-                                               .ThenInclude(ss => ss.Speaker)
-                                            .Include(s => s.SessionTags)
-                                               .ThenInclude(st => st.Tag)
-                                            .Include(s => s.SessionAttendees)
-                                                .ThenInclude(s => s.Attendee)
-                                            .Where(s => s.ConferenceId == conferenceId)
-                                            .ToListAsync();
+            return Task.FromResult(
+                        _dbContext.Sessions.AsNoTracking()
+                                        .Include(s => s.Track)
+                                        .Include(s => s.SessionSpeakers)
+                                            .ThenInclude(ss => ss.Speaker)
+                                        .Include(s => s.SessionTags)
+                                            .ThenInclude(st => st.Tag)
+                                        .Include(s => s.SessionAttendees)
+                                            .ThenInclude(s => s.Attendee)
+                                        .Where(s => s.ConferenceId == conferenceId));
+        }
+
+        public Task<IQueryable<Session>> GetByTrackIdAsync(int trackId, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult(
+                        _dbContext.Sessions.AsNoTracking()
+                                        .Include(s => s.Track)
+                                        .Include(s => s.SessionSpeakers)
+                                            .ThenInclude(ss => ss.Speaker)
+                                        .Include(s => s.SessionTags)
+                                            .ThenInclude(st => st.Tag)
+                                        .Include(s => s.SessionAttendees)
+                                            .ThenInclude(s => s.Attendee)
+                                        .Where(s => s.TrackId == trackId));
         }
 
         public async Task<Session> AddAsync(Session session, CancellationToken cancellationToken = default(CancellationToken))
         {
             var newSession = await _dbContext.Sessions.AddAsync(session);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             return newSession.Entity;
         }
@@ -76,7 +90,7 @@ namespace BackEnd.Repositories
             newSession.TrackId = session.TrackId;
             newSession.ConferenceId = session.ConferenceId;
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             return newSession;
         }
@@ -87,7 +101,7 @@ namespace BackEnd.Repositories
 
             _dbContext.Sessions.Remove(session);
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 }

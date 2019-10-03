@@ -15,7 +15,7 @@ namespace FrontEnd.Services
         Task<AttendeeResponse> GetAttendeeAsync(string name);
         Task DeleteSessionAsync(int id);
         Task<ICollection<SearchResult>> SearchAsync(string query);
-        Task<ICollection<AttendeeResponse>> GetAllAttendeesAsync();
+        Task<IEnumerable<AttendeeResponse>> GetAllAttendeesAsync();
         Task CreateConferenceAsync(ConferenceRequest conference);
         Task CreateSpeakerAsync(SpeakerRequest speaker);
         Task DeleteSpeakerAsync(int id);

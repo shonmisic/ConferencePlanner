@@ -1,4 +1,4 @@
-﻿@page "{conferenceId}"
+﻿@page
 @model FrontEnd.Pages.Admin.TracksModel
 @{
     ViewData["Title"] = "Tracks";
@@ -18,22 +18,21 @@
                 <div class="card shadow track h-100">
                     <div class="card-body">
                         <h5 class="card-title">
-                            <a asp-route-id="@track.ID" asp-route-conferenceId="@Model.Conference.ID">@track.Name</a>
+                            <a asp-route-trackId="@track.ID" asp-route-conferenceId="@Model.Conference.ID">@track.Name</a>
                         </h5>
                     </div>
                     <div class="card-footer">
-                        <input type="hidden" name="id" value="@track.ID" />
-                        <button type="submit" asp-page-handler="Remove" class="btn btn-danger btn-sm">Delete</button>
+                        <button type="submit" asp-page-handler="Remove"
+                                asp-route-trackId="@track.ID" class="btn btn-danger btn-sm">
+                            Delete
+                        </button>
                     </div>
                 </div>
             </div>
         }
     </div>
 
-    @if (Model.Sessions != null)
-    {
-        @await Html.PartialAsync("_SessionsPartial", Model.Sessions)
-    }
+    @await Html.PartialAsync("_SessionsPartial", Model.SessionsPartialModel)
 
 </form>
 

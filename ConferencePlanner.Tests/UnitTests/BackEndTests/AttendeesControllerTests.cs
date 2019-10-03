@@ -31,7 +31,7 @@ namespace ConferencePlanner.Tests.UnitTests.BackEndTests
 
             var controller = new AttendeesController(attendeesRepositoryStub.Object, sessionsRepositoryStub.Object, conferencesRepositoryStub.Object, cacheStub.Object);
 
-            var result = (await controller.Get(username)).Value;
+            var result = (await controller.GetByUsername(username)).Value;
             var expectedValue = GetTestAttendeeResponse(username);
 
             Assert.Equal(expectedValue.ID, result.ID);

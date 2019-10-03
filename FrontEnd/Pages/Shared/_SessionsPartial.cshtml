@@ -1,10 +1,20 @@
 ﻿@using ConferenceDTO
-@model IEnumerable<IGrouping<DateTimeOffset?, SessionResponse>>
+@model SessionsPartialModel
 @*
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
 
-@foreach (var timeSlot in Model)
+<ul class="nav nav-pills mb-3">
+    @foreach (var day in Model.DayOffsets)
+    {
+        <li role="presentation" class="nav-item">
+            <a class="nav-link @(Model.CurrentDayOffset == day.Offset ? "active" : null)" asp-page="@Model.ParentPagePath" asp-route-conferenceId="@Model.SelectedConferenceID"
+               asp-route-day="@day.Offset" asp-route-trackId="@Model.TrackId">@day.DayOfWeek?.ToString()</a>
+        </li>
+    }
+</ul>
+
+@foreach (var timeSlot in Model.Sessions)
 {
     <h4>@timeSlot.Key?.ToString("HH:mm")</h4>
     <div class="row">
@@ -24,10 +34,26 @@
                                     <a asp-page="Speaker" asp-route-id="@speaker.ID">@speaker.Name</a>
                                 </li>
                             }
-                            <li authz-policy="Admin">
-                                <a asp-page="/Admin/EditSession" asp-route-id="@session.ID" class="btn btn-default btn-xs">Edit</a>
-                            </li>
                         </ul>
+                        <form authz="true" method="post">
+                            <p class="mb-0">
+                                <a authz-policy="Admin" asp-page="/Admin/EditSession" asp-route-id="@session.ID" class="btn btn-default btn-sm">Edit</a>
+                                @if (Model.IsAttendingSession(session.ID))
+                                {
+                                    <button type="submit" asp-page-handler="RemoveSessionFromAttendee"
+                                            asp-route-sessionId="@session.ID" class="btn btn-default btn-sm bg-transparent" title="Remove from my personal agenda">
+                                        <i class="icon ion-md-star" aria-hidden="true"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button authz="true" type="submit" asp-page-handler="AddSessionToAttendee"
+                                            asp-route-sessionId="@session.ID" class="btn btn-default btn-sm bg-transparent" title="Add to attendance">
+                                        <i class="icon ion-md-star-outline" aria-hidden="true"></i>
+                                    </button>
+                                }
+                            </p>
+                        </form>
                     </div>
                 </div>
             </div>

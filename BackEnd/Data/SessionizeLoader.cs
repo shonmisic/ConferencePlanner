@@ -41,11 +41,6 @@ namespace BackEnd.Data
                             if (!addedSpeakers.ContainsKey(speaker.name))
                             {
                                 var thisSpeaker = new Speaker { Name = speaker.name };
-                                conference.ConferenceSpeakers.Add(new ConferenceSpeaker
-                                {
-                                    Conference = conference,
-                                    Speaker = thisSpeaker
-                                });
                                 addedSpeakers.Add(thisSpeaker.Name, thisSpeaker);
                             }
                         }
@@ -68,16 +63,16 @@ namespace BackEnd.Data
                             Track = addedTracks[room.name],
                             Abstract = thisSession.description,
                         };
-                        session.SessionTags = addedTags.Select(t => new SessionTag
+                        session.SessionTags = thisSession.categories.Select(c => new SessionTag
                         {
                             Session = session,
-                            Tag = t.Value
+                            Tag = addedTags[c.name]
                         }).ToList();
 
-                        session.SessionSpeakers = addedSpeakers.Select(s => new SessionSpeaker
+                        session.SessionSpeakers = thisSession.speakers.Select(s => new SessionSpeaker
                         {
                             Session = session,
-                            Speaker = s.Value
+                            Speaker = addedSpeakers[s.name]
                         }).ToList();
 
                         conference.Sessions.Add(session);

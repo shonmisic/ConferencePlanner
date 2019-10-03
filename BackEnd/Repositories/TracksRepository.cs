@@ -18,27 +18,28 @@ namespace BackEnd.Repositories
 
         public async Task<Track> AddAsync(Track track, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var newTrack = await _dbContext.Tracks.AddAsync(track);
+            var newTrack = await _dbContext.Tracks.AddAsync(track, cancellationToken);
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             return newTrack.Entity;
         }
 
         public async Task DeleteAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var track = await _dbContext.Tracks.Include(t => t.Sessions).SingleOrDefaultAsync(t => t.ID == id);
+            var track = await _dbContext.Tracks.Include(t => t.Sessions)
+                                            .SingleOrDefaultAsync(t => t.ID == id, cancellationToken);
 
             _dbContext.Tracks.Remove(track);
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
         public async Task<ICollection<Track>> GetAllByConferenceIdAsync(int conferenceId, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await _dbContext.Tracks.AsNoTracking()
                                         .Where(t => t.ConferenceId == conferenceId)
-                                        .ToListAsync();
+                                        .ToListAsync(cancellationToken);
         }
 
         public async Task<Track> GetByIdAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
@@ -46,7 +47,7 @@ namespace BackEnd.Repositories
             return await _dbContext.Tracks.AsNoTracking()
                                         .Include(t => t.Conference)
                                         .Include(t => t.Sessions)
-                                        .SingleOrDefaultAsync(t => t.ID == id);
+                                        .SingleOrDefaultAsync(t => t.ID == id, cancellationToken);
         }
     }
 }

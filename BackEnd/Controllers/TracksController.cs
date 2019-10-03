@@ -25,8 +25,8 @@ namespace BackEnd.Controllers
             _cache = cache;
         }
 
-        [HttpGet("{conferenceId:int}")]
-        public async Task<ActionResult<ICollection<TrackResponse>>> Get(int conferenceId)
+        [HttpGet("conference/{conferenceId:int}")]
+        public async Task<ActionResult<ICollection<TrackResponse>>> GetByConference(int conferenceId)
         {
             var result = (await _tracksRepository.GetAllByConferenceIdAsync(conferenceId))
                                                  .Select(t => t.MapTrackResponse())
@@ -40,6 +40,19 @@ namespace BackEnd.Controllers
             return result;
         }
 
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<TrackResponse>> GetById(int id)
+        {
+            var result = await _tracksRepository.GetByIdAsync(id);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return result.MapTrackResponse();
+        }
+
         [HttpPost]
         public async Task<ActionResult<TrackResponse>> Post(TrackRequest input)
         {
@@ -47,7 +60,7 @@ namespace BackEnd.Controllers
 
             var result = track.MapTrackResponse();
 
-            return CreatedAtAction(nameof(Get), new { conferenceId = result.ConferenceId }, result);
+            return CreatedAtAction(nameof(GetById), new { result.ID }, result);
         }
 
         [HttpDelete("{id:int}")]

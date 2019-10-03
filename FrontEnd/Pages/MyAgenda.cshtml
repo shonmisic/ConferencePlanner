@@ -75,10 +75,9 @@
                                     }
                                 </ul>
                                 <form authz="true" method="post">
-                                    <input type="hidden" name="sessionID" value="@session.ID" />
                                     <p class="mb-0">
                                         <a authz-policy="Admin" asp-page="/Admin/EditSession" asp-route-id="@session.ID" class="btn btn-default btn-sm">Edit</a>
-                                        <button type="submit" asp-page-handler="Remove" class="btn btn-default btn-sm bg-transparent" title="Remove from my personal agenda">
+                                        <button type="submit" asp-page-handler="Remove" asp-route-sessionId="@session.ID" class="btn btn-default btn-sm bg-transparent" title="Remove from my personal agenda">
                                             <i class="icon ion-md-star" aria-hidden="true"></i>
                                         </button>
                                     </p>
