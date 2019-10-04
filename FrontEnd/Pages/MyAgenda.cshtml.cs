@@ -23,8 +23,8 @@ namespace FrontEnd.Pages
             _logger = logger;
         }
 
-        public IEnumerable<ConferenceResponse> Conferences { get; set; }
-        public ConferenceResponse SelectedConference { get; set; }
+        public IEnumerable<Conference> Conferences { get; set; }
+        public Conference SelectedConference { get; set; }
         public IEnumerable<IGrouping<DateTimeOffset?, SessionResponse>> UserSessions { get; set; }
         public IEnumerable<(int Offset, DayOfWeek? DayOfWeek)> DayOffsets { get; set; }
         public int CurrentDayOffset { get; set; }
@@ -35,7 +35,9 @@ namespace FrontEnd.Pages
 
         public async Task OnGet(int day = 0, int id = 0)
         {
-            CurrentDayOffset = day; Conferences = await _apiClient.GetConferencesForFollowingFiveDays();
+            CurrentDayOffset = day; 
+            
+            Conferences = (await _apiClient.GetAttendeeAsync(User.Identity.Name)).Conferences;
 
             SelectedConference = Conferences.SingleOrDefault(c => c.ID == id);
 
