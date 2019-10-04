@@ -79,6 +79,7 @@ namespace BackEnd.Repositories
         {
             var attendee = await _dbContext.Attendees.Include(a => a.SessionAttendees)
                                                         .ThenInclude(sa => sa.Session)
+                                                    .Include(a => a.ConferenceAttendees)
                                                     .SingleOrDefaultAsync(a => a.UserName == username);
 
             var sessionAttendee = attendee.SessionAttendees.SingleOrDefault(sa => sa.SessionId == sessionId);

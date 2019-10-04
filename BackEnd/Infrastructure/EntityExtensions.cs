@@ -185,6 +185,17 @@ namespace BackEnd.Infrastructure
                             Url = CreateImageUrl(ai.Image.ID)
                         })
                     .ToList(),
+                Conferences = attendee.ConferenceAttendees?
+                    .Select(ca =>
+                        new ConferenceDTO.Conference
+                        {
+                            ID = ca.ConferenceId,
+                            EndTime = ca.Conference.EndTime,
+                            Name = ca.Conference.Name,
+                            StartTime = ca.Conference.StartTime,
+                            Url = CreateConferenceUrl(ca.ConferenceId)
+                        })
+                    .ToList()
             };
 
         public static void UpdateValuesFrom(this Attendee attendee, ConferenceDTO.Attendee input)

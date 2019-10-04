@@ -78,7 +78,7 @@ namespace BackEnd
 
             var result = attendee.MapAttendeeResponse();
 
-            return CreatedAtAction(nameof(GetByUsername), result.UserName, result);
+            return CreatedAtAction(nameof(GetByUsername), new { username = result.UserName }, result);
         }
 
         // PUT: api/Speakers/5
@@ -141,9 +141,10 @@ namespace BackEnd
 
             var newAttendee = await _attendeesRepository.AddSessionAsync(username, sessionId);
 
+            var result = newAttendee.MapAttendeeResponse();
             try
             {
-                return CreatedAtAction(nameof(GetByUsername), newAttendee.UserName, newAttendee.MapAttendeeResponse());
+                return CreatedAtAction(nameof(GetByUsername), new { username = result.UserName }, result);
             }
             catch (Exception r)
             {
