@@ -40,7 +40,7 @@ namespace BackEnd.Controllers
         {
             _logger.LogDebug($"{nameof(GetConferencesForFollowingFiveDays)} was called");
 
-            var dateTimeNow = DateTimeOffset.Now;
+            var dateTimeNow = new DateTimeOffset(DateTimeOffset.Now.Date);
 
             return await _conferencesRepository
                             .GetAll()

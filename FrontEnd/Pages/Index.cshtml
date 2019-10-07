@@ -12,48 +12,63 @@
     </div>
 }
 
-@if (!Model.AreThereAnyConferences || !Model.User.Identity.IsAuthenticated)
+@if (!Model.Conferences.Any())
 {
     <div class="alert alert-success alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
         There are no conferences in the following 5 days
     </div>
 }
 
-<div class="agenda">
-    <div class="row">
-        <div class="col">
-            <a authz-policy="Admin" asp-page="/Admin/CreateConference">Create new conference</a>
-        </div>
-    </div>
-    <form authz="true" method="post">
+    <div class="agenda">
         <div class="row">
-            @foreach (var conference in Model.Conferences)
-            {
-                <div class="col-md-3 mb-4">
-                    <div class="card shadow session h-100">
-                        <div class="card-body">
-                            <h5 class="card-title"><a asp-route-conferenceId="@conference.ID">@conference.Name</a></h5>
-                            <a asp-page="/Admin/Tracks" asp-route-conferenceId="@conference.ID">Tracks</a>
-                        </div>
-                        <div authz-policy="Admin" class="card-footer">
-                            <button type="submit" asp-page-handler="Remove" asp-route-conferenceId="@conference.ID"
-                                    class="btn btn-danger btn-sm">
-                                Delete Conference
-                            </button>
+            <div class="col">
+                <a authz-policy="Admin" asp-page="/Admin/CreateConference">Create new conference</a>
+            </div>
+        </div>
+        <form authz="true" method="post">
+            <div class="row">
+                @foreach (var conference in Model.Conferences)
+                {
+                    <div class="col-md-3 mb-4">
+                        <div class="card shadow session h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><a asp-route-conferenceId="@conference.ID">@conference.Name</a></h5>
+                                <a asp-page="/Tracks" asp-route-conferenceId="@conference.ID">Tracks</a>
+                            </div>
+                            <div authz-policy="Admin" class="card-footer">
+                                <button type="submit" asp-page-handler="Remove" asp-route-conferenceId="@conference.ID"
+                                        class="btn btn-danger btn-sm">
+                                    Delete Conference
+                                </button>
+                            </div>
                         </div>
                     </div>
+                }
+            </div>
+        </form>
+
+        @if (Model.SelectedConference != null)
+        {
+            <h1>Conference "@Model.SelectedConference.Name",  @System.DateTime.Now.Year</h1>
+
+            <h6><a asp-page="/Tracks" asp-route-conferenceId="@Model.SelectedConference.ID">Tracks</a></h6>
+
+            @if (!Model.SessionsGroupedByTime.Any())
+            {
+                <div class="alert alert-success alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    There are no sessions
                 </div>
             }
-        </div>
-    </form>
 
-    @if (Model.SelectedConference != null)
-    {
-        <h1>Conference "@Model.SelectedConference.Name",  @System.DateTime.Now.Year</h1>
+            @*<partial name="_SessionsPartial" model="Model.SessionsPartialModel" />*@
+            @await Html.PartialAsync("_SessionsPartial", Model.SessionsPartialModel)
 
-        <h6><a asp-page="/Admin/Tracks" asp-route-conferenceId="@Model.SelectedConference.ID">Tracks</a></h6>
+        }
+    </div>
 
-        <partial name="_SessionsPartial" model="Model.SessionsPartialModel" />
-    }
-</div>

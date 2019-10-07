@@ -41,7 +41,7 @@ namespace FrontEnd.Pages.Admin
         {
             await _apiClient.CreateSpeakerAsync(Speaker);
 
-            return RedirectToPage("/Admin/Speakers");
+            return RedirectToPage("/Speakers");
         }
 
         public void OnPostRemoveAsync(int index)

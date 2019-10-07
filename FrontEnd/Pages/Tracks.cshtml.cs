@@ -1,32 +1,36 @@
 ﻿using ConferenceDTO;
+using FrontEnd.Models;
 using FrontEnd.Pages.Shared;
 using FrontEnd.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace FrontEnd.Pages.Admin
 {
-    public class TracksModel : PageModel
+    public class TracksModel : SessionsContainingPageModel<TracksModel>
     {
-        private readonly IApiClient _apiClient;
-
-        public TracksModel(IApiClient apiClient)
+        public TracksModel(IApiClient apiClient, ILogger<TracksModel> logger)
+            : base(apiClient, logger)
         {
-            _apiClient = apiClient;
         }
 
         public ICollection<TrackResponse> Tracks { get; set; }
+        public IEnumerable<IGrouping<DateTimeOffset?, SessionResponse>> SessionsGroupedByTime { get; set; }
+        public IEnumerable<(int Offset, DayOfWeek? DayOfWeek)> DayOffsets { get; set; }
+        public int CurrentDayOffset { get; set; }
+        public int SelectedTrackId { get; set; }
         public ConferenceResponse Conference { get; set; }
         public SessionsPartialModel SessionsPartialModel { get; set; }
 
         public async Task<IActionResult> OnGet(int conferenceId, int trackId = 0, int day = 0)
         {
+            CurrentDayOffset = day;
+            SelectedTrackId = trackId;
+
             Conference = await _apiClient.GetConference(conferenceId);
 
             Tracks = await _apiClient.GetTracks(conferenceId);
@@ -43,9 +47,12 @@ namespace FrontEnd.Pages.Admin
 
             var numberOfDays = (endDate - startDate)?.Days + 1;
 
+            DayOffsets = Enumerable.Range(0, numberOfDays ?? 0)
+                                .Select(offset => (offset, startDate?.AddDays(offset).DayOfWeek));
+
             var filterDate = startDate?.AddDays(day);
 
-            var sessionsGroupedByTime = sessions.Where(s => s.StartTime?.Date == filterDate)
+            SessionsGroupedByTime = sessions.Where(s => s.StartTime?.Date == filterDate)
                                 .OrderBy(s => s.TrackId)
                                 .GroupBy(s => s.StartTime)
                                 .OrderBy(s => s.Key);
@@ -54,21 +61,22 @@ namespace FrontEnd.Pages.Admin
             {
                 AttendeeUsername = User.Identity.Name,
                 SelectedConferenceID = conferenceId,
-                Sessions = sessionsGroupedByTime,
-                ParentPagePath = "/Admin/Tracks",
-                CurrentDayOffset = day,
-                DayOffsets = Enumerable.Range(0, numberOfDays ?? 0)
-                                .Select(offset => (offset, startDate?.AddDays(offset).DayOfWeek))
+                SessionsGroupedByTime = SessionsGroupedByTime,
             };
 
             return Page();
         }
 
-        public async Task<IActionResult> OnPostRemoveAsync(int trackId)
+        public async Task<IActionResult> OnPostRemoveAsync(int trackId, int day, int conferenceId)
         {
             await _apiClient.DeleteTrackAsync(trackId);
 
-            return RedirectToPage();
+            return RedirectToPage(new { conferenceId, day, trackId });
+        }
+
+        public bool AreThereAnySessions()
+        {
+            return Tracks.Any() && SelectedTrackId > 0 && !SessionsGroupedByTime.Any();
         }
     }
 }

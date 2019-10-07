@@ -32,7 +32,7 @@ namespace FrontEnd.Models
 
             var session = await _apiClient.GetSessionAsync(sessionId);
 
-            return RedirectToPage(new { session.ConferenceId, day = session.StartTime?.DayOfWeek });
+            return RedirectToPage(new { session.ConferenceId, day = session.StartTime?.DayOfWeek, trackId = session.TrackId });
         }
 
         public async Task<IActionResult> OnPostRemoveSessionFromAttendeeAsync(int sessionId)
@@ -41,7 +41,7 @@ namespace FrontEnd.Models
 
             var session = await _apiClient.GetSessionAsync(sessionId);
 
-            return RedirectToPage(new { session.ConferenceId, day = session.StartTime?.DayOfWeek });
+            return RedirectToPage(new { session.ConferenceId, day = session.StartTime?.DayOfWeek, trackId = session.TrackId });
         }
     }
 }

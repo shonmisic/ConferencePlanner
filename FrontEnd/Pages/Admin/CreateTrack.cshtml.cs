@@ -28,7 +28,7 @@ namespace FrontEnd.Pages.Admin
         {
             await _apiClient.CreateTrackAsync(Track);
 
-            return RedirectToPage("/Admin/Tracks", new { Track.ConferenceId });
+            return RedirectToPage("/Tracks", new { Track.ConferenceId });
         }
     }
 }

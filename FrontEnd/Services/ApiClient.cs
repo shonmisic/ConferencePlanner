@@ -1,11 +1,13 @@
 ﻿using ConferenceDTO;
 using FrontEnd.Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace FrontEnd.Services
@@ -170,7 +172,7 @@ namespace FrontEnd.Services
 
         public async Task PutSessionAsync(Session session)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{_sessionsUri}/{session.ID}", session);
+            var response = await _httpClient.PutAsync($"{_sessionsUri}/{session.ID}", CreateHttpContent(session));
 
             response.EnsureSuccessStatusCode();
         }
@@ -251,28 +253,11 @@ namespace FrontEnd.Services
 
         public async Task<IEnumerable<ConferenceResponse>> GetConferencesForFollowingFiveDays()
         {
-            //if (!_cache.TryGetValue(_getConferences, out IEnumerable<ConferenceResponse> conferences))
-            //{
-                var response = await _httpClient.SendAsync(CreateRequest());
+            var response = await _httpClient.SendAsync(CreateRequest());
 
-                response.EnsureSuccessStatusCode();
+            response.EnsureSuccessStatusCode();
 
-                //        using (var contentStream = await response.Content.ReadAsStreamAsync())
-                //{
-                //    conferences = await JsonConvert.DeserializeObject<List<ConferenceResponse>>(contentStream);
-                //}
-
-                return await response.Content.ReadAsJsonAsync<IEnumerable<ConferenceResponse>>();
-
-            //    _cache.Set(_getConferences, conferences, GetCacheEntryOptions());
-            //}
-
-            //return conferences;
-        }
-
-        private static HttpRequestMessage CreateRequest()
-        {
-            return new HttpRequestMessage(HttpMethod.Get, $"{_conferencesUri}/5-days");
+            return await response.Content.ReadAsJsonAsync<IEnumerable<ConferenceResponse>>();
         }
 
         public async Task<ICollection<ConferenceResponse>> GetAllConferencesAsync()
@@ -353,7 +338,7 @@ namespace FrontEnd.Services
 
         public async Task PutAttendeeAsync(Models.Attendee attendee)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{_attendeesUri}/{attendee.UserName}", attendee);
+            var response = await _httpClient.PutAsync($"{_attendeesUri}/{attendee.UserName}", CreateHttpContent(attendee));
 
             response.EnsureSuccessStatusCode();
         }
@@ -379,6 +364,16 @@ namespace FrontEnd.Services
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsJsonAsync<ICollection<SessionResponse>>();
+        }
+
+        private static HttpRequestMessage CreateRequest()
+        {
+            return new HttpRequestMessage(HttpMethod.Get, $"{_conferencesUri}/5-days");
+        }
+
+        private static StringContent CreateHttpContent(object content)
+        {
+            return new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json");
         }
 
         private static MemoryCacheEntryOptions GetCacheEntryOptions()
