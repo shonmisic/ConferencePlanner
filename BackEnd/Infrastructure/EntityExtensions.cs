@@ -18,8 +18,8 @@ namespace BackEnd.Infrastructure
                 Name = conference.Name,
                 StartTime = conference.StartTime,
                 EndTime = conference.EndTime,
-                Sessions = conference.Sessions.Select(s => s.MapSession()).ToList(),
-                Tracks = conference.Tracks.Select(t => t.MapTrack()).ToList(),
+                Sessions = conference.Sessions?.Select(s => s.MapSession()).ToList(),
+                Tracks = conference.Tracks?.Select(t => t.MapTrack()).ToList(),
             };
 
             newConference.ConferenceAttendees = conference.Attendees?
@@ -131,14 +131,14 @@ namespace BackEnd.Infrastructure
             };
 
             mappedSpeaker.SessionSpeakers =
-                speaker.Sessions.Select(s => new SessionSpeaker
+                speaker.Sessions?.Select(s => new SessionSpeaker
                 {
                     Speaker = mappedSpeaker,
                     Session = s.MapSession()
                 })
                 .ToList();
 
-            mappedSpeaker.SpeakerImages.Add(new SpeakerImage
+            mappedSpeaker.SpeakerImages?.Add(new SpeakerImage
             {
                 Speaker = mappedSpeaker,
                 Image = speaker.Image.MapImage()
@@ -163,14 +163,15 @@ namespace BackEnd.Infrastructure
                 FirstName = attendee.FirstName,
                 LastName = attendee.LastName,
                 UserName = attendee.UserName,
+                EmailAddress = attendee.EmailAddress,
                 Sessions = attendee.SessionAttendees?
                     .Select(sa =>
                         new ConferenceDTO.Session
                         {
-                            ID = sa.Session.ID,
-                            Title = sa.Session.Title,
-                            StartTime = sa.Session.StartTime,
-                            EndTime = sa.Session.EndTime,
+                            ID = sa.SessionId,
+                            Title = sa.Session?.Title,
+                            StartTime = sa.Session?.StartTime,
+                            EndTime = sa.Session?.EndTime,
                             Url = CreateSessionUrl(sa.SessionId)
                         })
                     .ToList(),
@@ -179,10 +180,10 @@ namespace BackEnd.Infrastructure
                         new ConferenceDTO.Image
                         {
                             ID = ai.ImageId,
-                            UploadDate = ai.Image.UploadDate,
-                            Content = ai.Image.Content,
-                            Name = ai.Image.Name,
-                            Url = CreateImageUrl(ai.Image.ID)
+                            UploadDate = ai.Image?.UploadDate,
+                            Content = ai.Image?.Content,
+                            Name = ai.Image?.Name,
+                            Url = CreateImageUrl(ai.ImageId)
                         })
                     .ToList(),
                 Conferences = attendee.ConferenceAttendees?
@@ -190,9 +191,9 @@ namespace BackEnd.Infrastructure
                         new ConferenceDTO.Conference
                         {
                             ID = ca.ConferenceId,
-                            EndTime = ca.Conference.EndTime,
-                            Name = ca.Conference.Name,
-                            StartTime = ca.Conference.StartTime,
+                            EndTime = ca.Conference?.EndTime,
+                            Name = ca.Conference?.Name,
+                            StartTime = ca.Conference?.StartTime,
                             Url = CreateConferenceUrl(ca.ConferenceId)
                         })
                     .ToList()
@@ -245,10 +246,10 @@ namespace BackEnd.Infrastructure
                 StartTime = conference.StartTime,
                 EndTime = conference.EndTime,
                 Url = CreateConferenceUrl(conference.ID),
-                Sessions = conference.Sessions.Select(s => s.MapSession()).ToList(),
-                Speakers = conference.Sessions.SelectMany(s => s.SessionSpeakers).Select(ss => ss.Speaker.MapSpeaker()).ToList(),
+                Sessions = conference.Sessions?.Select(s => s.MapSession()).ToList(),
+                Speakers = conference.Sessions?.SelectMany(s => s.SessionSpeakers).Select(ss => ss.Speaker?.MapSpeaker()).ToList(),
                 Tracks = conference.Tracks.Select(t => t.MapTrack()).ToList(),
-                Attendees = conference.ConferenceAttendees.Select(ca => ca.Attendee.MapAttendee()).ToList()
+                Attendees = conference.ConferenceAttendees.Select(ca => ca.Attendee?.MapAttendee()).ToList()
             };
 
         public static ConferenceDTO.Speaker MapSpeaker(this Speaker speaker) =>

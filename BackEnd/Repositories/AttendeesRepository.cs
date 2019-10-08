@@ -49,7 +49,7 @@ namespace BackEnd.Repositories
 
         public async Task<Attendee> AddSessionAsync(string username, int sessionId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var attendee = await GetByUsernameAsync(username, cancellationToken);
+            var attendee = await GetByUsernameTrackingAsync(username, cancellationToken);
 
             var session = await _dbContext.Sessions.FindAsync(new object[] { sessionId }, cancellationToken);
 
@@ -59,14 +59,22 @@ namespace BackEnd.Repositories
                 SessionId = sessionId,
             });
 
-            if (!IsAttendingConference(attendee, session.ConferenceId))
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return attendee;
+        }
+
+        public async Task<Attendee> AddConferenceAsync(string username, int conferenceId, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var attendee = await GetByUsernameTrackingAsync(username, cancellationToken);
+
+            var conference = await _dbContext.Conferences.FindAsync(new object[] { conferenceId }, cancellationToken);
+
+            attendee.ConferenceAttendees.Add(new ConferenceAttendee
             {
-                attendee.ConferenceAttendees.Add(new ConferenceAttendee
-                {
-                    AttendeeId = attendee.ID,
-                    ConferenceId = session.ConferenceId
-                });
-            }
+                AttendeeId = attendee.ID,
+                ConferenceId = conferenceId,
+            });
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -75,7 +83,7 @@ namespace BackEnd.Repositories
 
         public async Task<bool> RemoveSessionAsync(string username, int sessionId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var attendee = await GetByUsernameAsync(username, cancellationToken);
+            var attendee = await GetByUsernameTrackingAsync(username, cancellationToken);
 
             var sessionAttendee = attendee.SessionAttendees.SingleOrDefault(sa => sa.SessionId == sessionId);
 
@@ -86,8 +94,10 @@ namespace BackEnd.Repositories
             return isSuccess;
         }
 
-        public async Task UpdateAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task UpdateAsync(Attendee attendee, CancellationToken cancellationToken = default(CancellationToken))
         {
+            _dbContext.Update(attendee);
+
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
@@ -98,7 +108,7 @@ namespace BackEnd.Repositories
 
         public async Task<bool> RemoveConferenceAsync(string username, int conferenceId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var attendee = await GetByUsernameAsync(username, cancellationToken);
+            var attendee = await GetByUsernameTrackingAsync(username, cancellationToken);
 
             var conferenceAttendee = attendee.ConferenceAttendees.SingleOrDefault(ca => ca.ConferenceId == conferenceId);
 
@@ -107,6 +117,17 @@ namespace BackEnd.Repositories
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return isSuccess;
+        }
+
+        private async Task<Attendee> GetByUsernameTrackingAsync(string username, CancellationToken cancellationToken)
+        {
+            return await _dbContext.Attendees.Include(a => a.SessionAttendees)
+                                                .ThenInclude(sa => sa.Session)
+                                            .Include(a => a.ConferenceAttendees)
+                                                .ThenInclude(ca => ca.Conference)
+                                            .Include(a => a.AttendeeImages)
+                                                .ThenInclude(ai => ai.Image)
+                                            .SingleOrDefaultAsync(a => a.UserName == username, cancellationToken);
         }
     }
 }

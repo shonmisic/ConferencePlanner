@@ -38,7 +38,7 @@ namespace FrontEnd.Pages.Admin
                 LastName = attendee.LastName,
                 UserName = attendee.UserName,
                 Url = attendee.Url,
-                Conferences = attendee.Conferences.Select(c => c.MapConferenceResponse()).ToList()
+                Conferences = attendee.Conferences?.Select(c => c.MapConferenceResponse()).ToList()
             };
 
             Conferences = await _apiClient.GetAllConferencesAsync();
@@ -55,7 +55,7 @@ namespace FrontEnd.Pages.Admin
 
             await _apiClient.PutAttendeeAsync(Attendee);
 
-            return RedirectToPage();
+            return RedirectToPage(new { username = Attendee.UserName });
         }
 
         public async Task<IActionResult> OnPostDeleteAsync()
@@ -76,20 +76,14 @@ namespace FrontEnd.Pages.Admin
         {
             await _apiClient.RemoveConferenceFromAttendeeAsync(Attendee.UserName, conferenceId);
 
-            var conference = Conferences.SingleOrDefault(c => c.ID == conferenceId);
-
-            Conferences.Remove(conference);
-
-            Message = "Conference removed successfully";
-
-            return RedirectToPage();
+            return RedirectToPage(new { username = Attendee.UserName });
         }
 
         public async Task<IActionResult> OnPostAddConferenceAsync(int conferenceId)
         {
             await _apiClient.AddConferenceToAttendeeAsync(Attendee.UserName, conferenceId);
 
-            return RedirectToPage();
+            return RedirectToPage(new { username = Attendee.UserName });
         }
 
         public bool IsAttendingConference(int conferenceId)

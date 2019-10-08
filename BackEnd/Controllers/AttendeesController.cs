@@ -96,7 +96,7 @@ namespace BackEnd
 
                 attendee.UpdateValuesFrom(input);
 
-                await _attendeesRepository.UpdateAsync();
+                await _attendeesRepository.UpdateAsync(attendee);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -135,6 +135,11 @@ namespace BackEnd
             }
 
             var newAttendee = await _attendeesRepository.AddSessionAsync(username, sessionId);
+
+            if (!newAttendee.ConferenceAttendees.Any(ca => ca.ConferenceId == session.ConferenceId))
+            {
+                newAttendee = await _attendeesRepository.AddConferenceAsync(username, session.ConferenceId);
+            }
 
             var result = newAttendee.MapAttendeeResponse();
              
@@ -195,15 +200,9 @@ namespace BackEnd
                 return BadRequest();
             }
 
-            attendee.ConferenceAttendees.Add(new Data.ConferenceAttendee
-            {
-                Attendee = attendee,
-                Conference = conference,
-            });
+           var newAttendee = await _attendeesRepository.AddConferenceAsync(username, conferenceId);
 
-            await _attendeesRepository.UpdateAsync();
-
-            return attendee.MapAttendeeResponse();
+            return newAttendee.MapAttendeeResponse();
         }
 
         [HttpDelete("{username}/conference/{conferenceId:int}")]
@@ -227,9 +226,15 @@ namespace BackEnd
                 return BadRequest();
             }
 
-            var success = attendee.ConferenceAttendees.Remove(conferenceAttendee);
+            var isSuccess = await _attendeesRepository.RemoveConferenceAsync(username, conferenceId);
 
-            await _attendeesRepository.UpdateAsync();
+            if (isSuccess)
+            {
+                foreach (var session in attendee.SessionAttendees.Select(sa => sa.Session).Where(s => s.ConferenceId == conferenceId))
+                {
+                    await _attendeesRepository.RemoveSessionAsync(username, session.ID);
+                }
+            }
 
             return NoContent();
         }
@@ -260,7 +265,7 @@ namespace BackEnd
                 }
             });
 
-            await _attendeesRepository.UpdateAsync();
+            await _attendeesRepository.UpdateAsync(attendee);
 
             var result = attendee.MapAttendeeResponse();
 

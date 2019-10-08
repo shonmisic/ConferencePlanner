@@ -14,7 +14,7 @@ namespace ConferenceDTO
         public string Name { get; set; }
 
         [Required]
-        public DateTimeOffset UploadDate { get; set; }
+        public DateTimeOffset? UploadDate { get; set; }
 
         [Required]
         public string Content { get; set; }

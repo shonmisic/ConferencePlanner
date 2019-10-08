@@ -66,9 +66,17 @@
                 </div>
             }
 
-            @*<partial name="_SessionsPartial" model="Model.SessionsPartialModel" />*@
-            @await Html.PartialAsync("_SessionsPartial", Model.SessionsPartialModel)
+            <ul class="nav nav-pills mb-3">
+                @foreach (var day in Model.DayOffsets)
+                {
+                    <li role="presentation" class="nav-item">
+                        <a class="nav-link @(Model.CurrentDayOffset == day.Offset ? "active" : null)" asp-route-conferenceId="@Model.SelectedConference.ID"
+                           asp-route-day="@day.Offset">@day.DayOfWeek?.ToString()</a>
+                    </li>
+                }
+            </ul>
 
+            @await Html.PartialAsync("_SessionsPartial", Model.SessionsPartialModel)
         }
     </div>
 

@@ -58,7 +58,12 @@ namespace BackEnd.Repositories
 
         public async Task<Conference> GetByIdAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return await _dbContext.Conferences.FindAsync(id);
+            return await _dbContext.Conferences.AsNoTracking()
+                                                .Include(c => c.ConferenceAttendees)
+                                                    .ThenInclude(ca => ca.Attendee)
+                                                .Include(c => c.Sessions)
+                                                .Include(c => c.Tracks)
+                                                .SingleOrDefaultAsync(c => c.ID == id, cancellationToken);
         }
 
         public async Task<Conference> UpdateAsync(Conference conference, CancellationToken cancellationToken = default(CancellationToken))
