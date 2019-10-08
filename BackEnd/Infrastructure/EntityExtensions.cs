@@ -8,7 +8,7 @@ namespace BackEnd.Infrastructure
 {
     public static class EntityExtensions
     {
-        private static readonly object _baseUrlFrontEnd = "https://localhost:44354";
+        private static readonly object _baseUrlFrontEnd = "https://localhost:44349";
 
         public static Conference MapConference(this ConferenceDTO.ConferenceRequest conference)
         {

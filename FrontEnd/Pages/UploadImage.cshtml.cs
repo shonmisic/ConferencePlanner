@@ -1,13 +1,13 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Threading.Tasks;
-using ConferenceDTO;
+﻿using ConferenceDTO;
 using FrontEnd.Infrastructure;
 using FrontEnd.Models;
 using FrontEnd.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace FrontEnd.Pages
 {
@@ -25,6 +25,7 @@ namespace FrontEnd.Pages
         [BindProperty]
         public ImageUpload ImageUpload { get; set; }
 
+        [BindProperty]
         public string AttendeeUsername { get; set; }
 
         public void OnGet(string attendeeUsername)
@@ -64,7 +65,7 @@ namespace FrontEnd.Pages
                     await _apiClient.AddImageToAttendeeAsync(AttendeeUsername, imageRequest);
                 }
 
-                return RedirectToPage(Request.Headers["Referer"].ToString());
+                return RedirectToPage();
             }
         }
     }
