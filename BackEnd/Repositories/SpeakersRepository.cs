@@ -39,13 +39,16 @@ namespace BackEnd.Repositories
                                             .SingleOrDefaultAsync(s => s.ID == id, cancellationToken);
         }
 
-        public async Task<Speaker> RemoveAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<Speaker> DeleteAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var speaker = await _dbContext.FindAsync<Speaker>(id, cancellationToken);
+            var speaker = await _dbContext.Speakers.Include(s => s.SessionSpeakers)
+                                                        .ThenInclude(ss => ss.Session)
+                                                    .SingleOrDefaultAsync(s => s.ID == id, cancellationToken);
 
             if (speaker != null)
             {
                 _dbContext.Remove(speaker);
+
                 await _dbContext.SaveChangesAsync(cancellationToken);
             }
 
@@ -54,7 +57,7 @@ namespace BackEnd.Repositories
 
         public async Task<Speaker> UpdateAsync(Speaker updatedSpeaker, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var speaker = await _dbContext.FindAsync<Speaker>(updatedSpeaker.ID, cancellationToken);
+            var speaker = await _dbContext.FindAsync<Speaker>(new object[] { updatedSpeaker.ID }, cancellationToken);
 
             if (speaker != null)
             {

@@ -193,7 +193,7 @@ namespace FrontEnd.Services
                     Query = query
                 };
 
-                var response = await _httpClient.PostAsJsonAsync(_searchUri, term);
+                var response = await _httpClient.PostAsync(_searchUri, CreateHttpContent(term));
 
                 response.EnsureSuccessStatusCode();
 

@@ -35,12 +35,12 @@ namespace BackEnd.Repositories
                                                 .ThenInclude(ca => ca.Conference)
                                             .Include(a => a.AttendeeImages)
                                                 .ThenInclude(ai => ai.Image)
-                                            .SingleOrDefaultAsync(a => a.UserName == username);
+                                            .SingleOrDefaultAsync(a => a.UserName == username, cancellationToken);
         }
 
         public async Task<Attendee> AddAsync(Attendee attendee, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var newAttendee = _dbContext.Attendees.Add(attendee);
+            var newAttendee = await _dbContext.Attendees.AddAsync(attendee, cancellationToken);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -49,11 +49,9 @@ namespace BackEnd.Repositories
 
         public async Task<Attendee> AddSessionAsync(string username, int sessionId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var attendee = await _dbContext.Attendees.Include(a => a.SessionAttendees)
-                                                     .Include(a => a.ConferenceAttendees)
-                                                     .SingleOrDefaultAsync(a => a.UserName == username);
+            var attendee = await GetByUsernameAsync(username, cancellationToken);
 
-            var session = await _dbContext.Sessions.FindAsync(sessionId);
+            var session = await _dbContext.Sessions.FindAsync(new object[] { sessionId }, cancellationToken);
 
             attendee.SessionAttendees.Add(new SessionAttendee
             {
@@ -72,31 +70,20 @@ namespace BackEnd.Repositories
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            return await GetByUsernameAsync(username);
+            return attendee;
         }
 
         public async Task<bool> RemoveSessionAsync(string username, int sessionId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var attendee = await _dbContext.Attendees.Include(a => a.SessionAttendees)
-                                                        .ThenInclude(sa => sa.Session)
-                                                    .Include(a => a.ConferenceAttendees)
-                                                    .SingleOrDefaultAsync(a => a.UserName == username);
+            var attendee = await GetByUsernameAsync(username, cancellationToken);
 
             var sessionAttendee = attendee.SessionAttendees.SingleOrDefault(sa => sa.SessionId == sessionId);
 
-            var success = attendee.SessionAttendees.Remove(sessionAttendee);
-
-            var conferenceId = sessionAttendee.Session.ConferenceId;
-            if (success && !DoesContainOtherSessionsFromTheSameConference(attendee, conferenceId))
-            {
-                var conferenceAttendee = attendee.ConferenceAttendees.SingleOrDefault(ca => ca.ConferenceId == conferenceId);
-
-                attendee.ConferenceAttendees.Remove(conferenceAttendee);
-            }
+            var isSuccess = attendee.SessionAttendees.Remove(sessionAttendee);
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            return success;
+            return isSuccess;
         }
 
         public async Task UpdateAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -109,9 +96,17 @@ namespace BackEnd.Repositories
             return attendee.ConferenceAttendees.Any(ca => ca.ConferenceId == conferenceId);
         }
 
-        private static bool DoesContainOtherSessionsFromTheSameConference(Attendee attendee, int conferenceId)
+        public async Task<bool> RemoveConferenceAsync(string username, int conferenceId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return attendee.SessionAttendees.Select(sa => sa.Session).Any(s => s.ConferenceId == conferenceId);
+            var attendee = await GetByUsernameAsync(username, cancellationToken);
+
+            var conferenceAttendee = attendee.ConferenceAttendees.SingleOrDefault(ca => ca.ConferenceId == conferenceId);
+
+            var isSuccess = attendee.ConferenceAttendees.Remove(conferenceAttendee);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return isSuccess;
         }
     }
 }

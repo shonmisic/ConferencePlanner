@@ -12,10 +12,15 @@ namespace BackEnd.Controllers
     [ApiController]
     public class SpeakersController : ControllerBase
     {
+        private readonly ISessionsRepository _sessionsRepository;
         private readonly ISpeakersRepository _speakersRepository;
 
-        public SpeakersController(ISpeakersRepository speakersRepository)
+        private static readonly string _getSessions = "GetSessions";
+
+        public SpeakersController(ISessionsRepository sessionsRepository,
+            ISpeakersRepository speakersRepository)
         {
+            _sessionsRepository = sessionsRepository;
             _speakersRepository = speakersRepository;
         }
 
@@ -84,11 +89,21 @@ namespace BackEnd.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ConferenceDTO.SpeakerResponse>> DeleteSpeaker(int id)
         {
-            var speaker = await _speakersRepository.RemoveAsync(id);
+            var speaker = await _speakersRepository.DeleteAsync(id);
 
             if (speaker == null)
             {
                 return NotFound();
+            }
+
+            foreach (var sessionId in speaker.SessionSpeakers.Select(ss => ss.SessionId))
+            {
+                var session = await _sessionsRepository.GetByIdAsync(sessionId);
+
+                if (!session.SessionSpeakers.Any())
+                {
+                    await _sessionsRepository.DeleteAsync(sessionId);
+                }
             }
 
             return speaker.MapSpeakerResponse();

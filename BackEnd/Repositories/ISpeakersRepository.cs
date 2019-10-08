@@ -11,6 +11,6 @@ namespace BackEnd.Repositories
         Task<Speaker> GetByIdAsync(int id, CancellationToken cancellationToken = default(CancellationToken));
         Task<Speaker> AddAsync(Speaker speaker, CancellationToken cancellationToken = default(CancellationToken));
         Task<Speaker> UpdateAsync(Speaker speaker, CancellationToken cancellationToken = default(CancellationToken));
-        Task<Speaker> RemoveAsync(int id, CancellationToken cancellationToken = default(CancellationToken));
+        Task<Speaker> DeleteAsync(int id, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

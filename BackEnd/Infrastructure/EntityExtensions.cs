@@ -73,14 +73,14 @@ namespace BackEnd.Infrastructure
                               .Select(st => new ConferenceDTO.Tag
                               {
                                   ID = st.TagId,
-                                  Name = st.Tag.Name
+                                  Name = st.Tag?.Name
                               })
                                .ToList(),
                 Speakers = session.SessionSpeakers?
                                   .Select(ss => new ConferenceDTO.Speaker
                                   {
                                       ID = ss.SpeakerId,
-                                      Name = ss.Speaker.Name
+                                      Name = ss.Speaker?.Name
                                   })
                                    .ToList(),
                 TrackId = session.TrackId ?? 0,
@@ -95,10 +95,10 @@ namespace BackEnd.Infrastructure
                                    .Select(sa => new ConferenceDTO.Attendee
                                    {
                                        ID = sa.AttendeeId,
-                                       UserName = sa.Attendee.UserName,
-                                       FirstName = sa.Attendee.FirstName,
-                                       LastName = sa.Attendee.LastName,
-                                       EmailAddress = sa.Attendee.EmailAddress
+                                       UserName = sa.Attendee?.UserName,
+                                       FirstName = sa.Attendee?.FirstName,
+                                       LastName = sa.Attendee?.LastName,
+                                       EmailAddress = sa.Attendee?.EmailAddress
                                    })
                                    .ToList()
             };
@@ -115,7 +115,7 @@ namespace BackEnd.Infrastructure
                         new ConferenceDTO.Session
                         {
                             ID = ss.SessionId,
-                            Title = ss.Session.Title,
+                            Title = ss.Session?.Title,
                             Url = CreateSessionUrl(ss.SessionId)
                         })
                     .ToList()

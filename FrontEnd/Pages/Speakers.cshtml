@@ -17,10 +17,13 @@
             <div class="col-md-3 mb-4">
                 <div class="card shadow track h-100">
                     <div class="card-header">
-                        <h5 class="card-title"><a asp-page="/Speaker" asp-route-id="@speaker.ID">@speaker.Name</a></h5>
+                        <h5 class="card-title"><a asp-page="Speaker" asp-route-id="@speaker.ID">@speaker.Name</a></h5>
                     </div>
                     <div class="card-body">
-                        <div class="card-text">@speaker.Bio</div>
+                        @foreach (var session in speaker.Sessions)
+                        {
+                            <h6><a asp-page="Session" asp-route-id="@session.ID">@session.Title</a></h6>
+                        }
                     </div>
                     <div class="card-footer">
                         <div class="card-link">@speaker.WebSite</div>

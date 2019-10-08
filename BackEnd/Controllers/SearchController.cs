@@ -37,7 +37,7 @@ namespace BackEnd.Controllers
 
             var speakerResultsTask = _db.Speakers.AsNoTracking()
                                                         .Include(s => s.SessionSpeakers)
-                                                            .ThenInclude(ss => ss.Speaker)
+                                                            .ThenInclude(ss => ss.Session)
                                                         .Where(s =>
                                                             s.Name.Contains(query) ||
                                                             s.Bio.Contains(query) ||

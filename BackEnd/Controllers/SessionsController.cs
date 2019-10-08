@@ -15,13 +15,17 @@ namespace BackEnd.Controllers
     public class SessionsController : Controller
     {
         private readonly ISessionsRepository _sessionsRepository;
+        private readonly ISpeakersRepository _speakersRepository;
         private readonly IDistributedCache _cache;
 
         private static readonly string _getSessions = "GetSessions";
 
-        public SessionsController(ISessionsRepository sessionsRepository, IDistributedCache cache)
+        public SessionsController(ISessionsRepository sessionsRepository,
+            ISpeakersRepository speakersRepository,
+            IDistributedCache cache)
         {
             _sessionsRepository = sessionsRepository;
+            _speakersRepository = speakersRepository;
             _cache = cache;
         }
 
@@ -129,14 +133,22 @@ namespace BackEnd.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<SessionResponse>> Delete(int id)
         {
-            var session = await _sessionsRepository.GetByIdAsync(id);
+            var session = await _sessionsRepository.DeleteAsync(id);
 
             if (session == null)
             {
                 return NotFound();
             }
 
-            await _sessionsRepository.DeleteAsync(id);
+            foreach (var speakerId in session.SessionSpeakers.Select(ss => ss.SpeakerId))
+            {
+                var speaker = await _speakersRepository.GetByIdAsync(speakerId);
+
+                if (!speaker.SessionSpeakers.Any())
+                {
+                    await _speakersRepository.DeleteAsync(speakerId);
+                }
+            }
 
             return session.MapSessionResponse();
         }

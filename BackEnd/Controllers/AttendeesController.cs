@@ -19,19 +19,14 @@ namespace BackEnd
         private readonly IAttendeesRepository _attendeesRepository;
         private readonly ISessionsRepository _sessionsRepository;
         private readonly IConferencesRepository _conferencesRepository;
-        private readonly IDistributedCache _cache;
-
-        private static readonly string _getAttendee = "GetAttendee";
 
         public AttendeesController(IAttendeesRepository attendeesRepository,
             ISessionsRepository sessionsRepository,
-            IConferencesRepository conferencesRepository,
-            IDistributedCache cache)
+            IConferencesRepository conferencesRepository)
         {
             _attendeesRepository = attendeesRepository;
             _sessionsRepository = sessionsRepository;
             _conferencesRepository = conferencesRepository;
-            _cache = cache;
         }
 
         [HttpGet]
@@ -142,15 +137,8 @@ namespace BackEnd
             var newAttendee = await _attendeesRepository.AddSessionAsync(username, sessionId);
 
             var result = newAttendee.MapAttendeeResponse();
-            try
-            {
-                return CreatedAtAction(nameof(GetByUsername), new { username = result.UserName }, result);
-            }
-            catch (Exception r)
-            {
-
-                throw;
-            }
+             
+            return CreatedAtAction(nameof(GetByUsername), new { username = result.UserName }, result);
         }
 
         [HttpDelete("{username}/session/{sessionId:int}")]
@@ -174,7 +162,14 @@ namespace BackEnd
                 return BadRequest();
             }
 
-            await _attendeesRepository.RemoveSessionAsync(username, sessionId);
+            var isSuccess = await _attendeesRepository.RemoveSessionAsync(username, sessionId);
+
+            var conferenceId = sessionAttendee.Session.ConferenceId;
+
+            if (isSuccess && !DoesContainOtherSessionsFromTheSameConference(attendee, conferenceId))
+            {
+                await _attendeesRepository.RemoveConferenceAsync(username, conferenceId);
+            }
 
             return NoContent();
         }
@@ -272,12 +267,9 @@ namespace BackEnd
             return result;
         }
 
-        private async Task CacheValue<T>(string key, T result)
+        private static bool DoesContainOtherSessionsFromTheSameConference(Data.Attendee attendee, int conferenceId)
         {
-            var valueToCache = result.ToByteArray();
-            var options = new DistributedCacheEntryOptions()
-               .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-            await _cache.SetAsync(key, valueToCache, options);
+            return attendee.SessionAttendees.Select(sa => sa.Session).Any(s => s.ConferenceId == conferenceId);
         }
     }
 }

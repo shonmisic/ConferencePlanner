@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using BackEnd.Data;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BackEnd.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace BackEnd.Repositories
 {
@@ -39,7 +37,7 @@ namespace BackEnd.Repositories
                                                .ThenInclude(st => st.Tag)
                                             .Include(s => s.SessionAttendees)
                                                 .ThenInclude(s => s.Attendee)
-                                            .SingleOrDefaultAsync(s => s.ID == id);
+                                            .SingleOrDefaultAsync(s => s.ID == id, cancellationToken);
         }
 
         public Task<IQueryable<Session>> GetByConferenceIdAsync(int conferenceId, CancellationToken cancellationToken = default(CancellationToken))
@@ -53,7 +51,8 @@ namespace BackEnd.Repositories
                                             .ThenInclude(st => st.Tag)
                                         .Include(s => s.SessionAttendees)
                                             .ThenInclude(s => s.Attendee)
-                                        .Where(s => s.ConferenceId == conferenceId));
+                                        .Where(s => s.ConferenceId == conferenceId)
+                    );
         }
 
         public Task<IQueryable<Session>> GetByTrackIdAsync(int trackId, CancellationToken cancellationToken = default(CancellationToken))
@@ -72,7 +71,8 @@ namespace BackEnd.Repositories
 
         public async Task<Session> AddAsync(Session session, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var newSession = await _dbContext.Sessions.AddAsync(session);
+            var newSession = await _dbContext.Sessions.AddAsync(session, cancellationToken);
+
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return newSession.Entity;
@@ -80,7 +80,7 @@ namespace BackEnd.Repositories
 
         public async Task<Session> UpdateAsync(ConferenceDTO.Session session, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var newSession = await _dbContext.Sessions.FindAsync(session.ID);
+            var newSession = await _dbContext.Sessions.FindAsync(new object[] { session.ID }, cancellationToken);
 
             newSession.ID = session.ID;
             newSession.Title = session.Title;
@@ -95,13 +95,20 @@ namespace BackEnd.Repositories
             return newSession;
         }
 
-        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<Session> DeleteAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var session = await _dbContext.Sessions.FindAsync(id);
+            var session = await _dbContext.Sessions.Include(s => s.SessionSpeakers)
+                                                        .ThenInclude(ss => ss.Speaker)
+                                                    .SingleOrDefaultAsync(s => s.ID == id, cancellationToken);
 
-            _dbContext.Sessions.Remove(session);
+            if (session != null)
+            {
+                _dbContext.Remove(session);
 
-            await _dbContext.SaveChangesAsync(cancellationToken);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+
+            return session;
         }
     }
 }
