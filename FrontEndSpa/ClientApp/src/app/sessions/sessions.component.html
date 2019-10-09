@@ -1,0 +1,25 @@
+<div class="agenda">
+  <h1>My Conference 2017</h1>
+
+  <div *ngIf="sessions$ | async as sessions; else loading" class="row">
+    <div *ngFor="let session of sessions" class="col-md-3 mb-2">
+      <div class="card shadow h-100">
+        <div class="card-body">
+          <p>{{ session.track.name }}</p>
+          <h3 class="card-title">
+            <a [routerLink]="['/session', session.id]">{{ session.title }}</a>
+          </h3>
+          <p *ngFor="let speaker of session.speakers">
+            <em>
+              <a [routerLink]="['/speaker', speaker.id]">{{ speaker.name }}</a>
+            </em>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loading>
+  <em>Loading...</em>
+</ng-template>

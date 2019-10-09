@@ -29,7 +29,7 @@ namespace ConferencePlanner.Tests.UnitTests.BackEndTests
             var cacheStub = new Mock<IDistributedCache>();
             cacheStub.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync((byte[]) null);
 
-            var controller = new AttendeesController(attendeesRepositoryStub.Object, sessionsRepositoryStub.Object, conferencesRepositoryStub.Object, cacheStub.Object);
+            var controller = new AttendeesController(attendeesRepositoryStub.Object, sessionsRepositoryStub.Object, conferencesRepositoryStub.Object);
 
             var result = (await controller.GetByUsername(username)).Value;
             var expectedValue = GetTestAttendeeResponse(username);

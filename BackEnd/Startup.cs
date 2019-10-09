@@ -3,16 +3,12 @@ using BackEnd.Infrastructure;
 using BackEnd.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
-using Serilog;
 using Swashbuckle.AspNetCore.Swagger;
-using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -28,14 +24,24 @@ namespace BackEnd
 
         public IConfiguration Configuration { get; }
         public IHostingEnvironment Environment { get; }
-
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             ConfigureDatabaseServices(services);
 
             //services.AddResponseCaching();
-
+            services.AddCors(options =>
+            {
+                options.AddPolicy(MyAllowSpecificOrigins,
+                builder =>
+                {
+                    builder.WithOrigins("https://localhost:44389")
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowAnyOrigin();
+                });
+            });
             services.AddMvc()
                     .AddXmlDataContractSerializerFormatters()
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
@@ -123,7 +129,7 @@ namespace BackEnd
             //});
 
             app.ConfigureExceptionHandler(loggerFactory.CreateLogger<Startup>());
-
+            app.UseCors(MyAllowSpecificOrigins);
             app.UseHttpsRedirection();
 
             app.UseHealthChecks("/health");

@@ -25,7 +25,6 @@ namespace FrontEnd.Services
         private static readonly string _getSpeakersKey = "_GetSpeakers";
         private static readonly string _getSearchResults = "_GetSearchResults";
         private static readonly string _getImages = "_GetImages";
-        private static readonly string _getConferences = "_GetConferences";
 
         private readonly IMemoryCache _cache;
         private readonly HttpClient _httpClient;

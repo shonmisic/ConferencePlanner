@@ -20,10 +20,12 @@ namespace ConferencePlanner.Tests.UnitTests.BackEndTests
             var sessionsRepositoryStub = new Mock<ISessionsRepository>();
             sessionsRepositoryStub.Setup(s => s.GetAll()).Returns(GetAllSessions());
 
+            var speakersRepositoryStub = new Mock<ISpeakersRepository>();
+
             var cacheStub = new Mock<IDistributedCache>();
             cacheStub.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync((byte[]) null);
 
-            var controller = new SessionsController(sessionsRepositoryStub.Object, cacheStub.Object);
+            var controller = new SessionsController(sessionsRepositoryStub.Object, speakersRepositoryStub.Object, cacheStub.Object);
 
             var result = (await controller.Get()).Value;
             var expectedResult = GetSessionResponses();
@@ -51,10 +53,12 @@ namespace ConferencePlanner.Tests.UnitTests.BackEndTests
             var sessionsRepositoryStub = new Mock<ISessionsRepository>();
             sessionsRepositoryStub.Setup(s => s.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(session);
 
+            var speakersRepositoryStub = new Mock<ISpeakersRepository>();
+
             var cacheStub = new Mock<IDistributedCache>();
             cacheStub.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync((byte[]) null);
 
-            var controller = new SessionsController(sessionsRepositoryStub.Object, cacheStub.Object);
+            var controller = new SessionsController(sessionsRepositoryStub.Object, speakersRepositoryStub.Object, cacheStub.Object);
 
             var result = (await controller.Get(id)).Value;
             var expectedResult = GetSingleSessionResponse();

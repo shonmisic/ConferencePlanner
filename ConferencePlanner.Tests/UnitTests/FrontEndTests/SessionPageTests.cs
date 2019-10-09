@@ -54,7 +54,7 @@ namespace ConferencePlanner.Tests.UnitTests.FrontEndTests
             {
                 PageContext = pageContext
             };
-            await model.OnGetAsync(testSession.ID, testSession.ConferenceId);
+            await model.OnGetAsync(testSession.ID);
 
             Assert.Equal(testSession.ID, model.Session.ID);
             Assert.Equal(testSession.Title, model.Session.Title);
