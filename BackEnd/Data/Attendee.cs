@@ -6,6 +6,6 @@ namespace BackEnd.Data
     {
         public virtual ICollection<AttendeeImage> AttendeeImages { get; set; }
         public virtual ICollection<SessionAttendee> SessionAttendees { get; set; }
-        public virtual ICollection<ConferenceAttendee> ConferenceAttendees { get; set; }
+        public virtual ICollection<ConferenceAttendee> ConferenceAttendaees { get; set; }
     }
 }
